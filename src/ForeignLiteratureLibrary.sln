@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForeignLiteratureLibrary.API", "ForeignLiteratureLibrary.API\ForeignLiteratureLibrary.API.csproj", "{CC875063-196E-47E3-BC06-7071EBBFBEAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForeignLiteratureLibrary.DAL", "ForeignLiteratureLibrary.DAL\ForeignLiteratureLibrary.DAL.csproj", "{FA931B81-46B9-4E13-B203-4822C900B5B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForeignLiteratureLibrary.BLL", "ForeignLiteratureLibrary.BLL\ForeignLiteratureLibrary.BLL.csproj", "{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
