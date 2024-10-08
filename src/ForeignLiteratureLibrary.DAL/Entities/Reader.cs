@@ -8,4 +8,6 @@ public class Reader
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public DateTime RegistrationDate { get; set; }
+
+    public ICollection<BookEditionLoan> Loans { get; set; } = [];
 }

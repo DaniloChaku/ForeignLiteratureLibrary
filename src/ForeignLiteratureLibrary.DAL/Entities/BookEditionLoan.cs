@@ -8,6 +8,7 @@ public class BookEditionLoan
     public DateTime LoanDate { get; set; }
     public DateTime DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
+
     public BookEdition? BookEdition { get; set; }
     public Reader? Reader { get; set; }
 }
