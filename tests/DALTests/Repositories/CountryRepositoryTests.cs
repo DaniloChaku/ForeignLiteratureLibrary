@@ -132,7 +132,7 @@ public class CountryRepositoryTests : IDisposable
     [Theory]
     [InlineData("  ")]
     [InlineData(null)]
-    [InlineData("USA")]
+    [InlineData("USAA")]
     public async Task AddAsync_InvalidCountryCode_ThrowsException(string invalidCountryCode)
     {
         // Arrange

@@ -21,7 +21,7 @@ public static class DbSeedHelper
         );
 
         CREATE TABLE Country(
-            CountryCode CHAR(2) PRIMARY KEY,
+            CountryCode VARCHAR(3) PRIMARY KEY,
             Name NVARCHAR(100) NOT NULL UNIQUE,
             CONSTRAINT CHK_Country_CountryCode CHECK (LEN(LTRIM(RTRIM(CountryCode))) > 1),
             CONSTRAINT CHK_Country_Name CHECK (LEN(LTRIM(RTRIM(Name))) > 0)
@@ -67,7 +67,7 @@ public static class DbSeedHelper
         CREATE TABLE Author(
             AuthorID INT PRIMARY KEY IDENTITY(1, 1),
             FullName NVARCHAR(100) NOT NULL,
-            CountryCode CHAR(2) NOT NULL,
+            CountryCode VARCHAR(3) NOT NULL,
             CONSTRAINT CHK_Author_FullName CHECK (LEN(LTRIM(RTRIM(FullName))) > 0),
             CONSTRAINT FK_Author_Country FOREIGN KEY(CountryCode) REFERENCES Country(CountryCode)
         );
@@ -75,7 +75,7 @@ public static class DbSeedHelper
         CREATE TABLE Translator(
             TranslatorID INT PRIMARY KEY IDENTITY(1, 1),
             FullName NVARCHAR(100) NOT NULL,
-            CountryCode CHAR(2) NOT NULL,
+            CountryCode VARCHAR(3) NOT NULL,
             CONSTRAINT CHK_Translator_FullName CHECK (LEN(LTRIM(RTRIM(FullName))) > 0),
             CONSTRAINT FK_Translator_Country FOREIGN KEY(CountryCode) REFERENCES Country(CountryCode)
         );
