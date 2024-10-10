@@ -19,10 +19,10 @@ public class TranslatorRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByIdWithBookEditionsAsync_ExistingId_ReturnsTranslatorWithBookEditions()
+    public async Task GetByIdAsync_ExistingId_ReturnsTranslatorWithBookEditions()
     {
         // Act
-        var translator = await _repository.GetByIdWithBookEditionsAsync(1);
+        var translator = await _repository.GetByIdAsync(1);
 
         // Assert
         translator.Should().NotBeNull();
@@ -36,10 +36,10 @@ public class TranslatorRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByIdWithBookEditionsAsync_NonExistingId_ReturnsNull()
+    public async Task GetByIdAsync_NonExistingId_ReturnsNull()
     {
         // Act
-        var translator = await _repository.GetByIdWithBookEditionsAsync(999);
+        var translator = await _repository.GetByIdAsync(999);
 
         // Assert
         translator.Should().BeNull();
@@ -60,7 +60,7 @@ public class TranslatorRepositoryTests : IDisposable
 
         // Assert
         newTranslator.TranslatorID.Should().BeGreaterThan(0);
-        var addedTranslator = await _repository.GetByIdWithBookEditionsAsync(newTranslator.TranslatorID);
+        var addedTranslator = await _repository.GetByIdAsync(newTranslator.TranslatorID);
         addedTranslator.Should().NotBeNull();
         addedTranslator!.FullName.Should().Be("John Doe");
         addedTranslator.CountryCode.Should().Be("US");
@@ -70,14 +70,14 @@ public class TranslatorRepositoryTests : IDisposable
     public async Task UpdateAsync_UpdatesExistingTranslator()
     {
         // Arrange
-        var translator = await _repository.GetByIdWithBookEditionsAsync(2);
+        var translator = await _repository.GetByIdAsync(2);
         translator!.FullName = "Philip Wayne Updated";
 
         // Act
         await _repository.UpdateAsync(translator);
 
         // Assert
-        var updatedTranslator = await _repository.GetByIdWithBookEditionsAsync(2);
+        var updatedTranslator = await _repository.GetByIdAsync(2);
         updatedTranslator.Should().NotBeNull();
         updatedTranslator!.FullName.Should().Be("Philip Wayne Updated");
     }
@@ -87,7 +87,7 @@ public class TranslatorRepositoryTests : IDisposable
     {
         // Act
         await _repository.DeleteAsync(4);
-        var deletedTranslator = await _repository.GetByIdWithBookEditionsAsync(4);
+        var deletedTranslator = await _repository.GetByIdAsync(4);
 
         // Assert
         deletedTranslator.Should().BeNull();
@@ -137,6 +137,19 @@ public class TranslatorRepositoryTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidTranslator));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllTranslators()
+    {
+        // Act
+        var translators = await _repository.GetAllAsync();
+
+        // Assert
+        translators.Should().HaveCount(3);
+        translators.Should().Contain(t => t.FullName == "Charles Wilbour" && t.CountryCode == "US");
+        translators.Should().Contain(t => t.FullName == "Philip Wayne" && t.CountryCode == "DE");
+        translators.Should().Contain(t => t.FullName == "Charles Baudelaire" && t.CountryCode == "FR");
     }
 
     protected virtual void Dispose(bool disposing)

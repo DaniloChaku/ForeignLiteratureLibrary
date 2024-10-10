@@ -16,5 +16,7 @@ public interface IAuthorRepository
 
     Task<List<Author>> GetPageAsync(int pageNumber, int pageSize);
 
+    Task<List<Author>> GetAllAsync();
+
     Task<List<TopAuthor>> GetTop10AuthorsAsync(DateTime startDate, DateTime endDate);
 }

@@ -145,4 +145,16 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
         return topAuthors.ToList();
     }
 
+    public async Task<List<Author>> GetAllAsync()
+    {
+        const string sql = @"
+                SELECT AuthorID, FullName, CountryCode
+                FROM Author
+                ORDER BY FullName";
+
+        using var connection = await CreateConnectionAsync();
+        var authors = await connection.QueryAsync<Author>(sql);
+
+        return authors.ToList();
+    }
 }

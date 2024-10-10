@@ -150,6 +150,20 @@ public class AuthorRepositoryTests : IDisposable
         await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(authorWithInvalidCountry));
     }
 
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllAuthors()
+    {
+        // Act
+        var authors = await _repository.GetAllAsync();
+
+        // Assert
+        authors.Should().HaveCount(4);
+        authors.Should().Contain(a => a.FullName == "J.D. Salinger" && a.CountryCode == "US");
+        authors.Should().Contain(a => a.FullName == "Victor Hugo" && a.CountryCode == "FR");
+        authors.Should().Contain(a => a.FullName == "Johann Wolfgang von Goethe" && a.CountryCode == "DE");
+        authors.Should().Contain(a => a.FullName == "Klaus Mann" && a.CountryCode == "DE");
+    }
+
     protected virtual void Dispose(bool disposing)
     {
         if (!_disposed)

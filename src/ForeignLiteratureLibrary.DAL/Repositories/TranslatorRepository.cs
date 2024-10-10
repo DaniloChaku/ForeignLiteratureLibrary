@@ -43,7 +43,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         await connection.ExecuteAsync(sql, new { TranslatorId = translatorId });
     }
 
-    public async Task<Translator?> GetByIdWithBookEditionsAsync(int translatorId)
+    public async Task<Translator?> GetByIdAsync(int translatorId)
     {
         const string sql = @"
                 SELECT t.TranslatorID, t.FullName, t.CountryCode, 
@@ -116,6 +116,19 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
                 PageSize = pageSize
             },
             splitOn: "CountryCode");
+
+        return translators.ToList();
+    }
+
+    public async Task<List<Translator>> GetAllAsync()
+    {
+        const string sql = @"
+                SELECT TranslatorID, FullName, CountryCode
+                FROM Translator
+                ORDER BY FullName";
+
+        using var connection = await CreateConnectionAsync();
+        var translators = await connection.QueryAsync<Translator>(sql);
 
         return translators.ToList();
     }

@@ -10,9 +10,11 @@ public interface ITranslatorRepository
 
     Task DeleteAsync(int translatorId);
 
-    Task<Translator?> GetByIdWithBookEditionsAsync(int translatorId);
+    Task<Translator?> GetByIdAsync(int translatorId);
 
     Task<int> GetCountAsync();
+
+    Task<List<Translator>> GetAllAsync();
 
     Task<List<Translator>> GetPageAsync(int pageNumber, int pageSize);
 }
