@@ -1,8 +1,26 @@
-﻿@{
+﻿@model TopBooksAndAuthorsViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="h3 my-4 text-center">Статистика за попередній місяць</h1>
+<div class="row">
+    <div class="col-md-6 d-flex flex-column align-content-center gap-2">
+        <h2 class="h4 text-center">Найпопулярніші книги</h2>
+        <ol class="list-group list-group-numbered">
+            @foreach(var book in Model.TopBooks)
+            {
+                <li class="list-group-item">@book.OriginalTitle</li>
+            }
+        </ol>
+    </div>
+    <div class="col-md-6 d-flex flex-column align-content-center gap-2">
+        <h2 class="h4 text-center">Найпопулярніші автори</h2>
+        <ol class="list-group list-group-numbered">
+            @foreach (var author in Model.TopAuthors)
+            {
+                <li class="list-group-item">@author.FullName</li>
+            }
+        </ol>
+    </div>
 </div>
