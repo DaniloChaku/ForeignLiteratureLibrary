@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForeignLiteratureLibrary.API", "src\ForeignLiteratureLibrary.API\ForeignLiteratureLibrary.API.csproj", "{CC875063-196E-47E3-BC06-7071EBBFBEAB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForeignLiteratureLibrary.DAL", "src\ForeignLiteratureLibrary.DAL\ForeignLiteratureLibrary.DAL.csproj", "{FA931B81-46B9-4E13-B203-4822C900B5B6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForeignLiteratureLibrary.BLL", "src\ForeignLiteratureLibrary.BLL\ForeignLiteratureLibrary.BLL.csproj", "{0C8377F0-6FFC-4773-9CF1-54E3C4B5FDBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DALTests", "tests\DALTests\DALTests.csproj", "{9A794420-0481-4C72-9B5F-5EAF3F3CB552}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DALTests", "tests\DALTests\DALTests.csproj", "{9A794420-0481-4C72-9B5F-5EAF3F3CB552}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForeignLiteratureLibrary.Web", "src\ForeignLiteratureLibrary.Web\ForeignLiteratureLibrary.Web.csproj", "{849F378F-1A8F-4CBF-A817-547D51FE0136}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC875063-196E-47E3-BC06-7071EBBFBEAB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA931B81-46B9-4E13-B203-4822C900B5B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{9A794420-0481-4C72-9B5F-5EAF3F3CB552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A794420-0481-4C72-9B5F-5EAF3F3CB552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A794420-0481-4C72-9B5F-5EAF3F3CB552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{849F378F-1A8F-4CBF-A817-547D51FE0136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{849F378F-1A8F-4CBF-A817-547D51FE0136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{849F378F-1A8F-4CBF-A817-547D51FE0136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{849F378F-1A8F-4CBF-A817-547D51FE0136}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
