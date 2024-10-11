@@ -28,9 +28,6 @@ public class TranslatorRepositoryTests : IDisposable
         translator.Should().NotBeNull();
         translator!.TranslatorID.Should().Be(1);
         translator.FullName.Should().Be("Charles Wilbour");
-        translator.CountryCode.Should().Be("US");
-        translator.Country.Should().NotBeNull();
-        translator.Country!.Name.Should().Be("United States");
         translator.BookEditions.Should().HaveCount(1);
         translator.BookEditions.First().BookEditionID.Should().Be(2);
     }
@@ -51,8 +48,7 @@ public class TranslatorRepositoryTests : IDisposable
         // Arrange
         var newTranslator = new Translator
         {
-            FullName = "John Doe",
-            CountryCode = "US"
+            FullName = "John Doe"
         };
 
         // Act
@@ -63,7 +59,6 @@ public class TranslatorRepositoryTests : IDisposable
         var addedTranslator = await _repository.GetByIdAsync(newTranslator.TranslatorID);
         addedTranslator.Should().NotBeNull();
         addedTranslator!.FullName.Should().Be("John Doe");
-        addedTranslator.CountryCode.Should().Be("US");
     }
 
     [Fact]
@@ -113,8 +108,6 @@ public class TranslatorRepositoryTests : IDisposable
         // Assert
         page1.Should().HaveCount(2);
         page2.Should().HaveCount(1);
-
-        page1.TrueForAll(t => t.Country != null);
     }
 
     [Theory]
@@ -123,17 +116,7 @@ public class TranslatorRepositoryTests : IDisposable
     public async Task AddAsync_InvalidName_ThrowsException(string invalidName)
     {
         // Arrange
-        var invalidTranslator = new Translator { FullName = invalidName, CountryCode = "US" };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidTranslator));
-    }
-
-    [Fact]
-    public async Task AddAsync_NonExistentCountryCode_ThrowsException()
-    {
-        // Arrange
-        var invalidTranslator = new Translator { FullName = "John Doe", CountryCode = "XX" };
+        var invalidTranslator = new Translator { FullName = invalidName };
 
         // Act & Assert
         await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidTranslator));
@@ -147,9 +130,9 @@ public class TranslatorRepositoryTests : IDisposable
 
         // Assert
         translators.Should().HaveCount(3);
-        translators.Should().Contain(t => t.FullName == "Charles Wilbour" && t.CountryCode == "US");
-        translators.Should().Contain(t => t.FullName == "Philip Wayne" && t.CountryCode == "DE");
-        translators.Should().Contain(t => t.FullName == "Charles Baudelaire" && t.CountryCode == "FR");
+        translators.Should().Contain(t => t.FullName == "Charles Wilbour");
+        translators.Should().Contain(t => t.FullName == "Philip Wayne");
+        translators.Should().Contain(t => t.FullName == "Charles Baudelaire");
     }
 
     protected virtual void Dispose(bool disposing)

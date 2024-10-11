@@ -13,9 +13,9 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task AddAsync(Translator translator)
     {
         const string sql = @"
-                INSERT INTO Translator (FullName, CountryCode)
+                INSERT INTO Translator (FullName)
                 OUTPUT INSERTED.TranslatorID
-                VALUES (@FullName, @CountryCode)";
+                VALUES (@FullName)";
 
         using var connection = await CreateConnectionAsync();
         var translatorId = await connection.ExecuteScalarAsync<int>(sql, translator);
@@ -26,7 +26,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     {
         const string sql = @"
                 UPDATE Translator 
-                SET FullName = @FullName, CountryCode = @CountryCode
+                SET FullName = @FullName
                 WHERE TranslatorID = @TranslatorId";
 
         using var connection = await CreateConnectionAsync();
@@ -46,11 +46,9 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<Translator?> GetByIdAsync(int translatorId)
     {
         const string sql = @"
-                SELECT t.TranslatorID, t.FullName, t.CountryCode, 
-                       c.CountryCode, c.Name, be.BookEditionID, 
+                SELECT t.TranslatorID, t.FullName, be.BookEditionID, 
                        be.ISBN, be.Title as Title
                 FROM Translator t
-                JOIN Country c ON t.CountryCode = c.CountryCode
                 LEFT JOIN BookEditionTranslator bet ON t.TranslatorID = bet.TranslatorID
                 LEFT JOIN BookEdition be ON bet.BookEditionID = be.BookEditionID
                 WHERE t.TranslatorID = @TranslatorId";
@@ -58,14 +56,13 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         using var connection = await CreateConnectionAsync();
 
         Dictionary<int, Translator> translatorMap = [];
-        await connection.QueryAsync<Translator, Country, BookEdition, Translator>(
+        await connection.QueryAsync<Translator, BookEdition, Translator>(
             sql,
-            (translator, country, bookEdition) =>
+            (translator, bookEdition) =>
             {
                 if (!translatorMap.TryGetValue(translator.TranslatorID, out var translatorEntry))
                 {
                     translatorEntry = translator;
-                    translatorEntry.Country = country;
                     translatorEntry.BookEditions = [];
                     translatorMap.Add(translator.TranslatorID, translatorEntry);
                 }
@@ -78,7 +75,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
                 return translatorEntry;
             },
             new { TranslatorId = translatorId },
-            splitOn: "CountryCode,BookEditionID");
+            splitOn: "BookEditionID");
 
         return translatorMap.Values.FirstOrDefault();
     }
@@ -94,28 +91,15 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<List<Translator>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT t.TranslatorID, t.FullName, t.CountryCode,
-                       c.CountryCode, c.Name as CountryName
+                SELECT t.TranslatorID, t.FullName
                 FROM Translator t
-                JOIN Country c ON t.CountryCode = c.CountryCode
                 ORDER BY t.FullName
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
-        var translators = await connection.QueryAsync<Translator, Country, Translator>(
-            sql,
-            (translator, country) =>
-            {
-                translator.Country = country;
-                return translator;
-            },
-            new
-            {
-                Offset = (pageNumber - 1) * pageSize,
-                PageSize = pageSize
-            },
-            splitOn: "CountryCode");
+        var parameters = new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize };
+        var translators = await connection.QueryAsync<Translator>(sql, parameters);
 
         return translators.ToList();
     }
@@ -123,7 +107,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<List<Translator>> GetAllAsync()
     {
         const string sql = @"
-                SELECT TranslatorID, FullName, CountryCode
+                SELECT TranslatorID, FullName
                 FROM Translator
                 ORDER BY FullName";
 

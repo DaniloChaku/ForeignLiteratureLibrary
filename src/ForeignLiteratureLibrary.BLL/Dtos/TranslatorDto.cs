@@ -27,7 +27,6 @@ public class TranslatorDto
         {
             TranslatorID = this.TranslatorID,
             FullName = this.FullName.Trim(),
-            CountryCode = this.CountryCode.Trim(),
             BookEditions = this.BookEditions.ConvertAll(be => be.ToEntity())
         };
     }
@@ -41,8 +40,6 @@ public static class TranslatorExtensions
         {
             TranslatorID = translator.TranslatorID,
             FullName = translator.FullName.Trim(),
-            CountryCode = translator.CountryCode.Trim(),
-            Country = translator.Country?.ToDto(),
             BookEditions = translator.BookEditions.Select(be => be.ToDto()).ToList()
         };
     }
