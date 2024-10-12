@@ -17,7 +17,7 @@ public class CountryDto
     {
         return new Country
         {
-            CountryCode = this.CountryCode.Trim(),
+            CountryCode = this.CountryCode.Trim().ToUpper(),
             Name = this.Name.Trim()
         };
     }

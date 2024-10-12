@@ -17,7 +17,7 @@ public class LanguageDto
     {
         return new Language
         {
-            LanguageCode = this.LanguageCode.Trim(),
+            LanguageCode = this.LanguageCode.Trim().ToLower(),
             Name = this.Name.Trim()
         };
     }

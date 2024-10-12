@@ -8,8 +8,6 @@ namespace ForeignLiteratureLibrary.BLL.Dtos;
 
 public class PaginatedResult<T>
 {
-
-
     public List<T> Items { get; set; } = [];
 
     public int Page { get; set; }
