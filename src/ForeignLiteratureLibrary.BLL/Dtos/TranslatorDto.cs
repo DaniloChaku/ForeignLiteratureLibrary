@@ -13,10 +13,6 @@ public class TranslatorDto
     [StringLength(100, ErrorMessage = "FullName cannot exceed 100 characters.")]
     public string FullName { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "CountryCode must be between 2 and 3 characters long.")]
-    public string CountryCode { get; set; } = string.Empty;
-
     public CountryDto? Country { get; set; }
 
     public List<BookEditionDto> BookEditions { get; set; } = [];
