@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -55,7 +56,7 @@ public class BookEditionRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task AddAsync_InvalidBookEdition_ThrowsSqlException()
+    public async Task AddAsync_InvalidISBN_ThrowsException()
     {
         // Arrange
         var invalidBookEdition = new BookEdition
@@ -72,7 +73,7 @@ public class BookEditionRepositoryTests : IDisposable
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidBookEdition));
+        await Assert.ThrowsAsync<CheckConstraintViolationException>(() => _repository.AddAsync(invalidBookEdition));
     }
 
     #endregion

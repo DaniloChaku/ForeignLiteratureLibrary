@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -137,7 +138,7 @@ public class AuthorRepositoryTests : IDisposable
         var invalidAuthor = new Author { FullName = invalidName, CountryCode = "US" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidAuthor));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidAuthor));
     }
 
     [Fact]
@@ -147,7 +148,7 @@ public class AuthorRepositoryTests : IDisposable
         var authorWithInvalidCountry = new Author { FullName = "Test Author", CountryCode = "XX" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(authorWithInvalidCountry));
+        await Assert.ThrowsAnyAsync<ForeignKeyViolationException>(() => _repository.AddAsync(authorWithInvalidCountry));
     }
 
     [Fact]

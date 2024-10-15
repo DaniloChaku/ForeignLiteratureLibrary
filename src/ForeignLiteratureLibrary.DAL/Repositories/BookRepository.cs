@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
@@ -19,9 +21,9 @@ public class BookRepository : BaseRepository, IBookRepository
         try
         {
             const string insertBookSql = @"
-                    INSERT INTO Book (OriginalTitle, OriginalLanguageCode, PublicationYear)
-                    OUTPUT INSERTED.BookID
-                    VALUES (@OriginalTitle, @OriginalLanguageCode, @PublicationYear)";
+                INSERT INTO Book (OriginalTitle, OriginalLanguageCode, PublicationYear)
+                OUTPUT INSERTED.BookID
+                VALUES (@OriginalTitle, @OriginalLanguageCode, @PublicationYear)";
 
             book.BookID = await connection.QuerySingleAsync<int>(insertBookSql, book, transaction);
 
@@ -30,13 +32,35 @@ public class BookRepository : BaseRepository, IBookRepository
 
             transaction.Commit();
         }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_OriginalTitle"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the book because the title cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_PublicationYear"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot add the book because the publication year '{book.PublicationYear}' is invalid", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("FK_Book_Language", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot add the book because the language '{book.OriginalLanguageCode}' does not exist", ex);
+            }
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot add the book because it already exists", ex);
+        }
         catch
         {
             transaction.Rollback();
             throw;
         }
     }
-
     public async Task UpdateAsync(Book book)
     {
         using var connection = await CreateConnectionAsync();
@@ -45,11 +69,11 @@ public class BookRepository : BaseRepository, IBookRepository
         try
         {
             const string updateBookSql = @"
-                    UPDATE Book 
-                    SET OriginalTitle = @OriginalTitle,
-                        OriginalLanguageCode = @OriginalLanguageCode,
-                        PublicationYear = @PublicationYear
-                    WHERE BookId = @BookId";
+                UPDATE Book 
+                SET OriginalTitle = @OriginalTitle,
+                    OriginalLanguageCode = @OriginalLanguageCode,
+                    PublicationYear = @PublicationYear
+                WHERE BookId = @BookId";
 
             await connection.ExecuteAsync(updateBookSql, book, transaction);
 
@@ -57,6 +81,30 @@ public class BookRepository : BaseRepository, IBookRepository
             await UpdateBookGenresAsync(book, connection, transaction);
 
             transaction.Commit();
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_OriginalTitle"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the book because the title cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_PublicationYear"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot update the book because the publication year '{book.PublicationYear}' is invalid", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("FK_Book_Language", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot update the book because the language '{book.OriginalLanguageCode}' does not exist", ex);
+            }
+            throw;
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot update the book because it already exists", ex);
         }
         catch
         {
@@ -103,10 +151,18 @@ public class BookRepository : BaseRepository, IBookRepository
 
     public async Task DeleteAsync(int bookId)
     {
-        const string sql = "DELETE FROM Book WHERE BookId = @BookId";
+        try
+        {
+            const string sql = "DELETE FROM Book WHERE BookId = @BookId";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { BookId = bookId });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { BookId = bookId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete book '{bookId}' because it is referenced by other entities.", ex);
+        }
     }
 
     public async Task<int> GetCountAsync()

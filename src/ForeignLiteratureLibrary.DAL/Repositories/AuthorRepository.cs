@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
@@ -12,35 +14,89 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
 
     public async Task AddAsync(Author author)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 INSERT INTO Author (FullName, CountryCode)
                 OUTPUT INSERTED.AuthorID
                 VALUES (@FullName, @CountryCode)";
 
-        using var connection = await CreateConnectionAsync();
-        var authorId = await connection.ExecuteScalarAsync<int>(sql, author);
-        author.AuthorID = authorId;
+            using var connection = await CreateConnectionAsync();
+            var authorId = await connection.ExecuteScalarAsync<int>(sql, author);
+            author.AuthorID = authorId;
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_FullName"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the author because the full name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_Country"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot add the author because the country '{author.CountryCode}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                "Cannot add the author because the data already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the author because a required field is missing", ex);
+        }
     }
 
     public async Task UpdateAsync(Author author)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 UPDATE Author 
                 SET FullName = @FullName, CountryCode = @CountryCode
                 WHERE AuthorID = @AuthorID";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, author);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, author);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_FullName"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the author because the full name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_Country"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot update the author because the country '{author.CountryCode}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                "Cannot update the author because the data already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the author because a required field is missing", ex);
+        }
     }
 
     public async Task DeleteAsync(int authorId)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 DELETE FROM Author 
                 WHERE AuthorID = @AuthorID";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { AuthorID = authorId });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { AuthorID = authorId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete author '{authorId}' because it is referenced by other entities.", ex);
+        }
     }
 
     public async Task<Author?> GetByIdAsync(int authorId)
@@ -96,7 +152,7 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
     public async Task<List<Author>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT a.AuthorID, a.FullName, a.CountryCode, c.CountryCode, c.Name as CountryName
+                SELECT a.AuthorID, a.FullName, a.CountryCode, c.CountryCode, c.Name
                 FROM Author a
                 JOIN Country c ON a.CountryCode = c.CountryCode
                 ORDER BY a.FullName

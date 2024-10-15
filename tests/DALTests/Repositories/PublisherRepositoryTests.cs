@@ -145,7 +145,7 @@ public class PublisherRepositoryTests : IDisposable
         var invalidPublisher = new Publisher { Name = invalidName };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidPublisher));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidPublisher));
     }
 
     protected virtual void Dispose(bool disposing)

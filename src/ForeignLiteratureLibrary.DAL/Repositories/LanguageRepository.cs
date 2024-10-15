@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
@@ -11,34 +13,90 @@ public class LanguageRepository : BaseRepository, ILanguageRepository
 
     public async Task AddAsync(Language language)
     {
-        const string sql = @"
-                INSERT INTO Language (LanguageCode, Name)
-                VALUES (@LanguageCode, @Name)";
+        try
+        {
+            const string sql = @"
+            INSERT INTO Language (LanguageCode, Name)
+            VALUES (@LanguageCode, @Name)";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, language);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, language);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot add the language because this code or name already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("CHK_Language_LanguageCode", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new CheckConstraintViolationException(
+                    "Cannot add the language because its code should be 2 or 3 characters long", ex);
+            }
+            if (ex.Message.Contains("CHK_Language_Name", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new CheckConstraintViolationException(
+                    "Cannot add the language because its Name should be at least 1 character long", ex);
+            }
+            throw;
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the language because not all required columns are provided", ex);
+        }
     }
-
     public async Task UpdateAsync(Language language)
     {
-        const string sql = @"
-                UPDATE Language 
-                SET Name = @Name
-                WHERE LanguageCode = @LanguageCode";
+        try
+        {
+            const string sql = @"
+            UPDATE Language 
+            SET Name = @Name
+            WHERE LanguageCode = @LanguageCode";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, language);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, language);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot update language '{language.LanguageCode}' because this name already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("CHK_Language_Name", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new CheckConstraintViolationException(
+                    "Cannot update the language because its Name should be at least 1 character long", ex);
+            }
+            throw;
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the language because its name is not provided", ex);
+        }
     }
-
     public async Task DeleteAsync(string languageCode)
     {
-        const string sql = @"
-                DELETE FROM Language 
-                WHERE LanguageCode = @LanguageCode";
+        try
+        {
+            const string sql = @"
+            DELETE FROM Language 
+            WHERE LanguageCode = @LanguageCode";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { LanguageCode = languageCode });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { LanguageCode = languageCode });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete language '{languageCode}' because it is referenced by other entities.", ex);
+        }
     }
+
 
     public async Task<Language?> GetByCodeAsync(string languageCode)
     {

@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
@@ -19,15 +21,15 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
         try
         {
             const string sql = @"
-                    INSERT INTO BookEdition (
-                        ISBN, Title, LanguageCode, PageCount, 
-                        ShelfLocation, TotalCopies, AvailableCopies, 
-                        BookId, PublisherId)
-                    OUTPUT INSERTED.BookEditionId
-                    VALUES (
-                        @ISBN, @Title, @LanguageCode, @PageCount,
-                        @ShelfLocation, @TotalCopies, @AvailableCopies,
-                        @BookId, @PublisherId)";
+                 INSERT INTO BookEdition (
+                     ISBN, Title, LanguageCode, PageCount, 
+                     ShelfLocation, TotalCopies, AvailableCopies, 
+                     BookId, PublisherId)
+                 OUTPUT INSERTED.BookEditionId
+                 VALUES (
+                     @ISBN, @Title, @LanguageCode, @PageCount,
+                     @ShelfLocation, @TotalCopies, @AvailableCopies,
+                     @BookId, @PublisherId)";
 
             bookEdition.BookEditionID = await connection.QuerySingleAsync<int>(
                 sql, bookEdition, transaction);
@@ -35,6 +37,59 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
             await UpdateTranslatorsAsync(bookEdition, connection, transaction);
 
             transaction.Commit();
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_ISBN"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the book edition because the ISBN cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Title"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the book edition because the title cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_TotalCopies"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot add the book edition because the total copies '{bookEdition.TotalCopies}' must be greater than 0", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_PageCount"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot add the book edition because the page count '{bookEdition.PageCount}' must be greater than 0", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_AvailableCopies"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot add the book edition because available copies '{bookEdition.AvailableCopies}' cannot be negative", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("FK_BookEdition_Book", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot add the book edition because the book '{bookEdition.BookID}' does not exist", ex);
+            }
+            if (ex.Message.Contains("FK_BookEdition_Language", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot add the book edition because the language '{bookEdition.LanguageCode}' does not exist", ex);
+            }
+            if (ex.Message.Contains("FK_BookEdition_Publisher", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot add the book edition because the publisher '{bookEdition.PublisherID}' does not exist", ex);
+            }
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot add the book edition because the ISBN '{bookEdition.ISBN}' already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the book edition because a required field is missing", ex);
         }
         catch
         {
@@ -51,21 +106,74 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
         try
         {
             const string sql = @"
-                    UPDATE BookEdition 
-                    SET ISBN = @ISBN,
-                        Title = @Title,
-                        LanguageCode = @LanguageCode,
-                        PageCount = @PageCount,
-                        ShelfLocation = @ShelfLocation,
-                        TotalCopies = @TotalCopies,
-                        AvailableCopies = @AvailableCopies,
-                        PublisherId = @PublisherId
-                    WHERE BookEditionId = @BookEditionId";
+                 UPDATE BookEdition 
+                 SET ISBN = @ISBN,
+                     Title = @Title,
+                     LanguageCode = @LanguageCode,
+                     PageCount = @PageCount,
+                     ShelfLocation = @ShelfLocation,
+                     TotalCopies = @TotalCopies,
+                     AvailableCopies = @AvailableCopies,
+                     PublisherId = @PublisherId
+                 WHERE BookEditionId = @BookEditionId";
 
             await connection.ExecuteAsync(sql, bookEdition, transaction);
             await UpdateTranslatorsAsync(bookEdition, connection, transaction);
 
             transaction.Commit();
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_ISBN"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the book edition because the ISBN cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Title"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the book edition because the title cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_TotalCopies"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot update the book edition because total copies '{bookEdition.TotalCopies}' must be greater than 0", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_PageCount"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot update the book edition because the page count '{bookEdition.PageCount}' must be greater than 0", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_AvailableCopies"))
+        {
+            throw new CheckConstraintViolationException(
+                $"Cannot update the book edition because available copies '{bookEdition.AvailableCopies}' cannot be negative", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            if (ex.Message.Contains("FK_BookEdition_Book", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot update the book edition because the book '{bookEdition.BookID}' does not exist", ex);
+            }
+            if (ex.Message.Contains("FK_BookEdition_Language", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot update the book edition because the language '{bookEdition.LanguageCode}' does not exist", ex);
+            }
+            if (ex.Message.Contains("FK_BookEdition_Publisher", StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new ForeignKeyViolationException(
+                    $"Cannot update the book edition because the publisher '{bookEdition.PublisherID}' does not exist", ex);
+            }
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot update the book edition because the ISBN '{bookEdition.ISBN}' already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the book edition because a required field is missing", ex);
         }
         catch
         {
@@ -107,8 +215,16 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
 
     public async Task DeleteAsync(int bookEditionId)
     {
-        using var connection = await CreateConnectionAsync();
-        const string sql = "DELETE FROM BookEdition WHERE BookEditionId = @BookEditionId";
-        await connection.ExecuteAsync(sql, new { BookEditionId = bookEditionId });
+        try
+        {
+            using var connection = await CreateConnectionAsync();
+            const string sql = "DELETE FROM BookEdition WHERE BookEditionId = @BookEditionId";
+            await connection.ExecuteAsync(sql, new { BookEditionId = bookEditionId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete the book edition '{bookEditionId}' because it is referenced by other entities.", ex);
+        }
     }
 }

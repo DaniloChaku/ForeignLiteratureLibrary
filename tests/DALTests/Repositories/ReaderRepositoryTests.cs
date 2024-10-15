@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -145,7 +146,7 @@ public class ReaderRepositoryTests : IDisposable
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidReader));
+        await Assert.ThrowsAsync<CheckConstraintViolationException>(() => _repository.AddAsync(invalidReader));
     }
 
     protected virtual void Dispose(bool disposing)

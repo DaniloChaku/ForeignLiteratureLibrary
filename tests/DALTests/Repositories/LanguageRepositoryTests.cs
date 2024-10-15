@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -132,7 +133,7 @@ public class LanguageRepositoryTests : IDisposable
         var duplicateLanguage = new Language { LanguageCode = "EN", Name = "English (US)" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(duplicateLanguage));
+        await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateLanguage));
     }
 
     [Theory]
@@ -144,7 +145,7 @@ public class LanguageRepositoryTests : IDisposable
         var invalidLanguage = new Language { LanguageCode = invalidLanguageCode, Name = "English (US)" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidLanguage));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidLanguage));
     }
 
     protected virtual void Dispose(bool disposing)

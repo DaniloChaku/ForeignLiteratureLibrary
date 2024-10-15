@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -126,20 +127,31 @@ public class CountryRepositoryTests : IDisposable
         var duplicateCountry = new Country { CountryCode = "US", Name = "United States (duplicate)" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(duplicateCountry));
+        await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateCountry));
+    }
+
+    [Fact]
+    public async Task AddAsync_NullCountryCodeOrName_ThrowsException()
+    {
+        // Arrange
+        var invalidCountryNullCode = new Country { CountryCode = null!, Name = "Invalid" };
+        var invalidCountryNullName = new Country { CountryCode = "ARG", Name = null! };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotNullConstraintViolationException>(() => _repository.AddAsync(invalidCountryNullCode));
+        await Assert.ThrowsAsync<NotNullConstraintViolationException>(() => _repository.AddAsync(invalidCountryNullName));
     }
 
     [Theory]
     [InlineData("  ")]
-    [InlineData(null)]
-    [InlineData("USAA")]
-    public async Task AddAsync_InvalidCountryCode_ThrowsException(string invalidCountryCode)
+    [InlineData("U")]
+    public async Task AddAsync_CountryCodeLessThan2CharactersLong_ThrowsException(string invalidCountryCode)
     {
         // Arrange
         var invalidCountry = new Country { CountryCode = invalidCountryCode, Name = "Invalid" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidCountry));
+        await Assert.ThrowsAsync<CheckConstraintViolationException>(() => _repository.AddAsync(invalidCountry));
     }
 
     protected virtual void Dispose(bool disposing)

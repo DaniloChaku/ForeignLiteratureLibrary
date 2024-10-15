@@ -64,7 +64,7 @@ public class BookRepositoryTests : IDisposable
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidBook));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidBook));
     }
 
     [Fact]

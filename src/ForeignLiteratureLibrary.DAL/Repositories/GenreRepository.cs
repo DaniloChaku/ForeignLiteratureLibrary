@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
@@ -12,35 +14,79 @@ public class GenreRepository : BaseRepository, IGenreRepository
 
     public async Task AddAsync(Genre genre)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 INSERT INTO Genre (Name)
                 OUTPUT INSERTED.GenreID
                 VALUES (@Name)";
 
-        using var connection = await CreateConnectionAsync();
-        var genreId = await connection.ExecuteScalarAsync<int>(sql, genre);
-        genre.GenreID = genreId;
+            using var connection = await CreateConnectionAsync();
+            var genreId = await connection.ExecuteScalarAsync<int>(sql, genre);
+            genre.GenreID = genreId;
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Genre_Name"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the genre because the name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot add the genre because the name '{genre.Name}' already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the genre because a required field is missing", ex);
+        }
     }
 
     public async Task UpdateAsync(Genre genre)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 UPDATE Genre 
                 SET Name = @Name
-                WHERE GenreID = @GenreId";
+                WHERE GenreID = @GenreID";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, genre);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, genre);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Genre_Name"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the genre because the name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot update the genre because the name '{genre.Name}' already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the genre because a required field is missing", ex);
+        }
     }
 
     public async Task DeleteAsync(int genreId)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 DELETE FROM Genre 
-                WHERE GenreID = @GenreId";
+                WHERE GenreID = @GenreID";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { GenreId = genreId });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { GenreID = genreId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete genre '{genreId}' because it is referenced by other entities.", ex);
+        }
     }
 
     public async Task<Genre?> GetByIdAsync(int genreId)

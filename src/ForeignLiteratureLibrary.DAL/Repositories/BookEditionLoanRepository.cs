@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
@@ -19,20 +21,50 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
 
     public async Task AddAsync(BookEditionLoan loan)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 INSERT INTO BookEditionLoan 
                 (BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate)
                 VALUES 
                 (@BookEditionID, @LibraryCardNumber, @LoanDate, @DueDate, @ReturnDate);
                 SELECT CAST(SCOPE_IDENTITY() as int)";
 
-        using var connection = await CreateConnectionAsync();
-        loan.BookEditionLoanID = await connection.QuerySingleAsync<int>(sql, loan);
+            using var connection = await CreateConnectionAsync();
+            loan.BookEditionLoanID = await connection.QuerySingleAsync<int>(sql, loan);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_BookEdition"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot add the loan because the book edition with ID '{loan.BookEditionID}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_Reader"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot add the loan because the reader with library card number '{loan.LibraryCardNumber}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_DueDate"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the loan because the due date must be on or after the loan date", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_ReturnDate"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the loan because the return date must be on or after the loan date", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the loan because a required field is missing", ex);
+        }
     }
 
     public async Task UpdateAsync(BookEditionLoan loan)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 UPDATE BookEditionLoan 
                 SET BookEditionID = @BookEditionID,
                     LibraryCardNumber = @LibraryCardNumber,
@@ -41,16 +73,50 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
                     ReturnDate = @ReturnDate
                 WHERE BookEditionLoanID = @BookEditionLoanID";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, loan);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, loan);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_BookEdition"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot update the loan because the book edition with ID '{loan.BookEditionID}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_Reader"))
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot update the loan because the reader with library card number '{loan.LibraryCardNumber}' does not exist", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_DueDate"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the loan because the due date must be on or after the loan date", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_ReturnDate"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the loan because the return date must be on or after the loan date", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the loan because a required field is missing", ex);
+        }
     }
 
     public async Task DeleteAsync(int loanId)
     {
-        const string sql = "DELETE FROM BookEditionLoan WHERE BookEditionLoanID = @LoanId";
+        try
+        {
+            const string sql = "DELETE FROM BookEditionLoan WHERE BookEditionLoanID = @LoanId";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { LoanId = loanId });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { LoanId = loanId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete the loan with ID '{loanId}' because it is referenced in other records.", ex);
+        }
     }
 
     public async Task<BookEditionLoan?> GetByIdAsync(int loanId)

@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
@@ -12,42 +14,85 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
 
     public async Task AddAsync(Translator translator)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 INSERT INTO Translator (FullName)
                 OUTPUT INSERTED.TranslatorID
                 VALUES (@FullName)";
 
-        using var connection = await CreateConnectionAsync();
-        var translatorId = await connection.ExecuteScalarAsync<int>(sql, translator);
-        translator.TranslatorID = translatorId;
+            using var connection = await CreateConnectionAsync();
+            var translatorId = await connection.ExecuteScalarAsync<int>(sql, translator);
+            translator.TranslatorID = translatorId;
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_FullName"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot add the translator because the full name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot add the translator because a record with the same name already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot add the translator because a required field is missing", ex);
+        }
     }
 
     public async Task UpdateAsync(Translator translator)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 UPDATE Translator 
                 SET FullName = @FullName
                 WHERE TranslatorID = @TranslatorId";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, translator);
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, translator);
+        }
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_FullName"))
+        {
+            throw new CheckConstraintViolationException(
+                "Cannot update the translator because the full name cannot be empty", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            throw new UniqueConstraintViolationException(
+                $"Cannot update the translator because a record with the same name already exists", ex);
+        }
+        catch (SqlException ex) when (ex.Number == 515)
+        {
+            throw new NotNullConstraintViolationException(
+                "Cannot update the translator because a required field is missing", ex);
+        }
     }
 
     public async Task DeleteAsync(int translatorId)
     {
-        const string sql = @"
+        try
+        {
+            const string sql = @"
                 DELETE FROM BookEditionTranslator WHERE TranslatorID = @TranslatorId;
                 DELETE FROM Translator WHERE TranslatorID = @TranslatorId";
 
-        using var connection = await CreateConnectionAsync();
-        await connection.ExecuteAsync(sql, new { TranslatorId = translatorId });
+            using var connection = await CreateConnectionAsync();
+            await connection.ExecuteAsync(sql, new { TranslatorId = translatorId });
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            throw new ForeignKeyViolationException(
+                $"Cannot delete the translator '{translatorId}' because they are referenced in other records.", ex);
+        }
     }
 
     public async Task<Translator?> GetByIdAsync(int translatorId)
     {
         const string sql = @"
-                SELECT t.TranslatorID, t.FullName, be.BookEditionID, 
-                       be.ISBN, be.Title as Title
+                SELECT t.TranslatorID, t.FullName, be.*
                 FROM Translator t
                 LEFT JOIN BookEditionTranslator bet ON t.TranslatorID = bet.TranslatorID
                 LEFT JOIN BookEdition be ON bet.BookEditionID = be.BookEditionID

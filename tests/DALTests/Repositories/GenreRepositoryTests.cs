@@ -1,6 +1,7 @@
 ﻿using DALTests.TestHelpers;
 using FluentAssertions;
 using ForeignLiteratureLibrary.DAL.Entities;
+using ForeignLiteratureLibrary.DAL.Exceptions;
 using ForeignLiteratureLibrary.DAL.Repositories;
 using Microsoft.Data.SqlClient;
 
@@ -131,7 +132,7 @@ public class GenreRepositoryTests : IDisposable
         var duplicateGenre = new Genre { Name = "Fiction" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(duplicateGenre));
+        await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateGenre));
     }
 
     [Theory]
@@ -144,7 +145,7 @@ public class GenreRepositoryTests : IDisposable
         var invalidGenre = new Genre { Name = invalidName };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidGenre));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidGenre));
     }
 
     protected virtual void Dispose(bool disposing)

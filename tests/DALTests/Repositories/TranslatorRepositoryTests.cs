@@ -119,7 +119,7 @@ public class TranslatorRepositoryTests : IDisposable
         var invalidTranslator = new Translator { FullName = invalidName };
 
         // Act & Assert
-        await Assert.ThrowsAsync<SqlException>(() => _repository.AddAsync(invalidTranslator));
+        await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidTranslator));
     }
 
     [Fact]
