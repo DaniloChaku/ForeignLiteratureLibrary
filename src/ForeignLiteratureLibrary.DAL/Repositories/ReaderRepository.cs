@@ -108,19 +108,18 @@ public class ReaderRepository : BaseRepository, IReaderRepository
     public async Task<Reader?> GetByLibraryCardNumberAsync(string libraryCardNumber)
     {
         const string sql = @"
-                SELECT r.*, bel.*
-                FROM Reader r
-                LEFT JOIN BookEditionLoan bel ON r.LibraryCardNumber = bel.LibraryCardNumber
-                WHERE r.LibraryCardNumber = @LibraryCardNumber
-                    AND (bel.ReturnDate IS NULL OR bel.ReturnDate IS NOT NULL)";
+        SELECT r.*, bel.*, be.*
+        FROM Reader r
+        LEFT JOIN BookEditionLoan bel ON r.LibraryCardNumber = bel.LibraryCardNumber
+        LEFT JOIN BookEdition be ON bel.BookEditionID = be.BookEditionID
+        WHERE r.LibraryCardNumber = @LibraryCardNumber";
 
         using var connection = await CreateConnectionAsync();
-
         var readerDictionary = new Dictionary<string, Reader>();
 
-        await connection.QueryAsync<Reader, BookEditionLoan, Reader>(
+        await connection.QueryAsync<Reader, BookEditionLoan, BookEdition, Reader>(
             sql,
-            (reader, loan) =>
+            (reader, loan, bookEdition) =>
             {
                 if (!readerDictionary.TryGetValue(reader.LibraryCardNumber, out var readerEntry))
                 {
@@ -128,16 +127,15 @@ public class ReaderRepository : BaseRepository, IReaderRepository
                     readerEntry.Loans = new List<BookEditionLoan>();
                     readerDictionary.Add(reader.LibraryCardNumber, readerEntry);
                 }
-
                 if (loan != null)
                 {
+                    loan.BookEdition = bookEdition;
                     readerEntry.Loans.Add(loan);
                 }
-
                 return readerEntry;
             },
             new { LibraryCardNumber = libraryCardNumber },
-            splitOn: "BookEditionLoanID");
+            splitOn: "BookEditionLoanID,BookEditionID");
 
         return readerDictionary.Values.FirstOrDefault();
     }

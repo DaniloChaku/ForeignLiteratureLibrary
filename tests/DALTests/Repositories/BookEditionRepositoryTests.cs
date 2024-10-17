@@ -118,6 +118,17 @@ public class BookEditionRepositoryTests : IDisposable
         updatedBookEdition.Translators.Should().Contain(t => t.TranslatorID == 3);
     }
 
+    [Fact]
+    public async Task UpdateAsync_TotalCopiesLessThanLoanCount_ThrowsBookEditionUnavailableException()
+    {
+        // Arrange
+        var bookEdition = await _repository.GetByIdAsync(1);
+        bookEdition!.TotalCopies = 0;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BookEditionUnavailableException>(() => _repository.UpdateAsync(bookEdition));
+    }
+
     #endregion
 
     #region DeleteAsync

@@ -6,6 +6,14 @@ namespace ForeignLiteratureLibrary.DAL.Repositories;
 
 public partial class BookEditionRepository
 {
+    private const string AvailableCopiesSql = @"
+        (be.TotalCopies - 
+        (
+            SELECT COUNT(*) 
+            FROM BookEditionLoan bel 
+            WHERE bel.BookEditionID = be.BookEditionID AND bel.ReturnDate IS NULL)
+        ) AS AvailableCopies";
+
     public async Task<int> GetCountAsync()
     {
         const string sql = "SELECT COUNT(*) FROM BookEdition";
@@ -16,8 +24,8 @@ public partial class BookEditionRepository
 
     public async Task<BookEdition?> GetByIdAsync(int bookEditionId)
     {
-        const string sql = @"
-            SELECT be.*, b.*, p.*, l.*, t.*, a.*, g.*
+        const string sql = $@"
+            SELECT be.*, {AvailableCopiesSql}, b.*, p.*, l.*, t.*, a.*, g.*
             FROM BookEdition be
             LEFT JOIN Book b ON be.BookID = b.BookID
             LEFT JOIN Publisher p ON be.PublisherID = p.PublisherID
@@ -35,8 +43,8 @@ public partial class BookEditionRepository
 
     public async Task<BookEdition?> GetByIsbnAsync(string isbn)
     {
-        const string sql = @"
-            SELECT be.*, b.*, p.*, l.*, t.*, a.*, g.*
+        const string sql = $@"
+            SELECT be.*, {AvailableCopiesSql}, b.*, p.*, l.*, t.*, a.*, g.*
             FROM BookEdition be
             LEFT JOIN Book b ON be.BookID = b.BookID
             LEFT JOIN Publisher p ON be.PublisherID = p.PublisherID
@@ -54,8 +62,8 @@ public partial class BookEditionRepository
 
     public async Task<List<BookEdition>> GetPageAsync(int pageNumber, int pageSize)
     {
-        const string sql = @"
-                SELECT be.*, b.*, p.*, t.*, a.*, g.*
+        const string sql = $@"
+                SELECT be.*, {AvailableCopiesSql}, b.*, p.*, t.*, a.*, g.*
                 FROM BookEdition be
                 LEFT JOIN Book b ON be.BookID = b.BookID
                 LEFT JOIN Publisher p ON be.PublisherID = p.PublisherID
@@ -73,8 +81,8 @@ public partial class BookEditionRepository
 
     public async Task<List<BookEdition>> GetPageByGenreAsync(int genreId)
     {
-        const string sql = @"
-                SELECT DISTINCT be.*, b.*, p.*, t.*, a.*, g.*
+        const string sql = $@"
+                SELECT DISTINCT be.*, {AvailableCopiesSql}, b.*, p.*, t.*, a.*, g.*
                 FROM BookEdition be
                 JOIN Book b ON be.BookID = b.BookID
                 JOIN BookGenre bg ON b.BookID = bg.BookID
@@ -93,8 +101,8 @@ public partial class BookEditionRepository
 
     public async Task<List<BookEdition>> GetPageByLanguageAsync(string languageCode)
     {
-        const string sql = @"
-                SELECT be.*, b.*, p.*, t.*, a.*, g.*
+        const string sql = $@"
+                SELECT be.*, {AvailableCopiesSql}, b.*, p.*, t.*, a.*, g.*
                 FROM BookEdition be
                 LEFT JOIN Book b ON be.BookID = b.BookID
                 LEFT JOIN Publisher p ON be.PublisherID = p.PublisherID
@@ -113,8 +121,8 @@ public partial class BookEditionRepository
 
     public async Task<List<BookEdition>> GetPageByTitleAsync(string title)
     {
-        const string sql = @"
-                SELECT be.*, b.*, p.*, t.*, a.*, g.*
+        const string sql = $@"
+                SELECT be.*, {AvailableCopiesSql}, b.*, p.*, t.*, a.*, g.*
                 FROM BookEdition be
                 LEFT JOIN Book b ON be.BookID = b.BookID
                 LEFT JOIN Publisher p ON be.PublisherID = p.PublisherID
@@ -166,8 +174,9 @@ public partial class BookEditionRepository
                         bookDictionary.Add(book.BookID, bookEntry);
                         bookEntry.Authors = new List<Author>();
                         bookEntry.Genres = new List<Genre>();
-                        bookEditionEntry.Book = bookEntry;
                     }
+
+                    bookEditionEntry.Book = bookEntry;
 
                     if (author != null && !bookEntry.Authors.Any(a => a.AuthorID == author.AuthorID))
                     {

@@ -33,6 +33,10 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
             using var connection = await CreateConnectionAsync();
             loan.BookEditionLoanID = await connection.QuerySingleAsync<int>(sql, loan);
         }
+        catch (SqlException ex) when (ex.Number == 50000 && ex.Message.Contains("No available copies"))
+        {
+            throw new BookEditionUnavailableException(ex.Message, ex);
+        }
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_BookEdition"))
         {
             throw new ForeignKeyViolationException(

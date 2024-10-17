@@ -52,16 +52,14 @@ public static class DbSeedHelper
             PageCount INT NOT NULL,
             ShelfLocation NVARCHAR(60) NOT NULL,
             TotalCopies INT NOT NULL,
-            AvailableCopies INT NOT NULL,
             PublisherID INT,
             CONSTRAINT FK_BookEdition_Book FOREIGN KEY(BookID) REFERENCES Book(BookID),
             CONSTRAINT FK_BookEdition_Language FOREIGN KEY(LanguageCode) REFERENCES Language(LanguageCode),
             CONSTRAINT FK_BookEdition_Publisher FOREIGN KEY(PublisherID) REFERENCES Publisher(PublisherID),
             CONSTRAINT CHK_ISBN CHECK(LEN(LTRIM(RTRIM(ISBN))) > 0),
             CONSTRAINT CHK_Title CHECK (LEN(LTRIM(RTRIM(Title))) > 0),
-            CONSTRAINT CHK_TotalCopies CHECK(TotalCopies > 0),
+            CONSTRAINT CHK_TotalCopies CHECK(TotalCopies >= 0),
             CONSTRAINT CHK_PageCount CHECK(PageCount > 0),
-            CONSTRAINT CHK_AvailableCopies CHECK(AvailableCopies >= 0)
         );
 
         CREATE TABLE Author(
@@ -162,11 +160,11 @@ public static class DbSeedHelper
         ('Nine Stories', 'EN', 1953);
 
         -- Insert into BookEdition
-        INSERT INTO BookEdition (ISBN, BookID, Title, LanguageCode, PageCount, ShelfLocation, TotalCopies, AvailableCopies, PublisherID) VALUES
-        ('978-0-14-023750-4', 1, 'The Catcher in the Rye', 'EN', 214, 'A1-01', 10, 5, 1),
-        ('978-0-19-953640-5', 2, 'Les Misérables', 'FR', 1463, 'B2-12', 8, 3, 2),
-        ('978-0-521-31009-0', 3, 'Faust', 'DE', 504, 'C3-04', 7, 7, 3),
-        ('978-0-521-31009-2', 3, 'Faust', 'DE', 504, 'C3-04', 5, 7, 3);
+        INSERT INTO BookEdition (ISBN, BookID, Title, LanguageCode, PageCount, ShelfLocation, TotalCopies, PublisherID) VALUES
+        ('978-0-14-023750-4', 1, 'The Catcher in the Rye', 'EN', 214, 'A1-01', 10, 1),
+        ('978-0-19-953640-5', 2, 'Les Misérables', 'FR', 1463, 'B2-12', 8, 2),
+        ('978-0-521-31009-0', 3, 'Faust', 'DE', 504, 'C3-04', 7, 3),
+        ('978-0-521-31009-2', 3, 'Faust', 'DE', 504, 'C3-04', 5, 3);
 
         -- Insert into Author
         INSERT INTO Author (FullName, CountryCode) VALUES
@@ -218,7 +216,93 @@ public static class DbSeedHelper
         (3, 2),
         (4, 1);";
 
+        var triggerBookEditionTotalCount = @"
+        CREATE TRIGGER trg_EnsureAvailableCopies
+        ON BookEdition
+        AFTER UPDATE
+        AS
+        BEGIN
+            SET NOCOUNT ON;
+
+            DECLARE @BookEditionID INT, @NewTotalCopies INT, @OldTotalCopies INT, @OpenLoans INT;
+
+            -- Handle multiple row operations
+            IF (SELECT COUNT(*) FROM inserted) > 1
+            BEGIN
+                RAISERROR('This trigger does not support multi-row operations.', 16, 1);
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            SELECT @BookEditionID = i.BookEditionID, @NewTotalCopies = i.TotalCopies, @OldTotalCopies = d.TotalCopies
+            FROM inserted i
+            JOIN deleted d ON i.BookEditionID = d.BookEditionID;
+
+            -- Only check if TotalCopies is being reduced
+            IF @NewTotalCopies < @OldTotalCopies
+            BEGIN
+                SELECT @OpenLoans = COUNT(*)
+                FROM BookEditionLoan
+                WHERE BookEditionID = @BookEditionID AND ReturnDate IS NULL;
+
+                IF (@NewTotalCopies - @OpenLoans < 0)
+                BEGIN
+                    DECLARE @ErrorMsg NVARCHAR(200) = 'Error: Total copies (' + CAST(@NewTotalCopies AS NVARCHAR) + 
+                                                      ') cannot be less than open loans (' + CAST(@OpenLoans AS NVARCHAR) + 
+                                                      ') for BookEditionID ' + CAST(@BookEditionID AS NVARCHAR) + '.';
+                    RAISERROR(@ErrorMsg, 16, 1);
+                    ROLLBACK TRANSACTION;
+                END
+            END
+        END;
+        ";
+
+        var triggerBookEditionLoanPreventManualInsert = @"
+        CREATE TRIGGER trg_PreventManualInsertOnLoan
+        ON BookEditionLoan
+        INSTEAD OF INSERT
+        AS
+        BEGIN
+            SET NOCOUNT ON;
+
+            DECLARE @BookEditionID INT, @LoanCount INT, @TotalCopies INT;
+   
+            -- Handle multiple row inserts
+            IF (SELECT COUNT(*) FROM inserted) > 1
+            BEGIN
+                RAISERROR('This trigger does not support multi-row inserts.', 16, 1);
+                RETURN;
+            END
+
+            SELECT @BookEditionID = BookEditionID FROM inserted;
+    
+            SELECT @LoanCount = COUNT(*)
+            FROM BookEditionLoan
+            WHERE BookEditionID = @BookEditionID AND ReturnDate IS NULL;
+
+            SELECT @TotalCopies = TotalCopies 
+            FROM BookEdition 
+            WHERE BookEditionID = @BookEditionID;
+
+            IF (@TotalCopies - @LoanCount > 0)
+            BEGIN
+                -- If copies are available, allow the insert
+                INSERT INTO BookEditionLoan (BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate)
+                OUTPUT inserted.BookEditionLoanID
+                SELECT BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate 
+                FROM inserted;
+            END
+            ELSE
+            BEGIN
+                -- If no available copies, raise an error
+                RAISERROR('Error: No available copies for this book edition.', 16, 1);
+            END
+        END;
+        ";
+
         connection.Execute(query);
+        connection.Execute(triggerBookEditionTotalCount);
+        connection.Execute(triggerBookEditionLoanPreventManualInsert);
     }
 
     public static void DropTables(string connectionString)

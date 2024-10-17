@@ -176,17 +176,47 @@ public class BookRepository : BaseRepository, IBookRepository
     public async Task<Book?> GetByIdAsync(int bookId)
     {
         const string sql = @"
-            SELECT b.*, l.*, a.*, g.*
+            SELECT b.*, l.*, a.*, g.*, be.*
             FROM Book b
             LEFT JOIN Language l ON b.OriginalLanguageCode = l.LanguageCode
             LEFT JOIN BookAuthor ba ON b.BookId = ba.BookId
             LEFT JOIN Author a ON ba.AuthorId = a.AuthorId
             LEFT JOIN BookGenre bg ON b.BookId = bg.BookId
             LEFT JOIN Genre g ON bg.GenreId = g.GenreId
+            LEFT JOIN BookEdition be ON b.BookId = be.BookId
             WHERE b.BookId = @BookId";
 
-        var books = await QueryBooksAsync(sql, new { BookId = bookId });
-        return books.FirstOrDefault();
+        using var connection = await CreateConnectionAsync();
+        var bookDictionary = new Dictionary<int, Book>();
+
+        await connection.QueryAsync<Book, Language, Author, Genre, BookEdition, Book>(
+            sql,
+            (book, language, author, genre, bookEdition) =>
+            {
+                if (!bookDictionary.TryGetValue(book.BookID, out var bookEntry))
+                {
+                    bookEntry = book;
+                    bookEntry.OriginalLanguage = language;
+                    bookEntry.Authors = new List<Author>();
+                    bookEntry.Genres = new List<Genre>();
+                    bookEntry.Editions = new List<BookEdition>();
+                    bookDictionary.Add(bookEntry.BookID, bookEntry);
+                }
+
+                if (author != null && !bookEntry.Authors.Any(a => a.AuthorID == author.AuthorID))
+                    bookEntry.Authors.Add(author);
+                if (genre != null && !bookEntry.Genres.Any(g => g.GenreID == genre.GenreID))
+                    bookEntry.Genres.Add(genre);
+                if (bookEdition != null && !bookEntry.Editions.Any(be => be.BookEditionID == bookEdition.BookEditionID))
+                    bookEntry.Editions.Add(bookEdition);
+
+                return bookEntry;
+            },
+            new { BookId = bookId },
+            splitOn: "LanguageCode,AuthorId,GenreId,BookEditionID"
+        );
+
+        return bookDictionary.Values.FirstOrDefault();
     }
 
     public async Task<List<Book>> GetPageAsync(int pageNumber, int pageSize)

@@ -23,12 +23,12 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
             const string sql = @"
                  INSERT INTO BookEdition (
                      ISBN, Title, LanguageCode, PageCount, 
-                     ShelfLocation, TotalCopies, AvailableCopies, 
+                     ShelfLocation, TotalCopies, 
                      BookId, PublisherId)
                  OUTPUT INSERTED.BookEditionId
                  VALUES (
                      @ISBN, @Title, @LanguageCode, @PageCount,
-                     @ShelfLocation, @TotalCopies, @AvailableCopies,
+                     @ShelfLocation, @TotalCopies,
                      @BookId, @PublisherId)";
 
             bookEdition.BookEditionID = await connection.QuerySingleAsync<int>(
@@ -113,7 +113,6 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
                      PageCount = @PageCount,
                      ShelfLocation = @ShelfLocation,
                      TotalCopies = @TotalCopies,
-                     AvailableCopies = @AvailableCopies,
                      PublisherId = @PublisherId
                  WHERE BookEditionId = @BookEditionId";
 
@@ -121,6 +120,10 @@ public partial class BookEditionRepository : BaseRepository, IBookEditionReposit
             await UpdateTranslatorsAsync(bookEdition, connection, transaction);
 
             transaction.Commit();
+        }
+        catch (SqlException ex) when (ex.Number == 50000 && ex.Message.Contains("less than open loans"))
+        {
+            throw new BookEditionUnavailableException(ex.Message, ex);
         }
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_ISBN"))
         {
