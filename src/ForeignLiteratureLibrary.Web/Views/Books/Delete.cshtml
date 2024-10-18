@@ -1,0 +1,63 @@
+﻿@model BookDto
+
+@{
+    ViewBag.Title = "Видалити книгу";
+}
+
+<form asp-action="Delete" method="post">
+    <input hidden asp-for="BookID"/>
+    <input hidden asp-for="OriginalTitle"/>
+    <h2 class="text-center mb-3">Видалити</h2>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="OriginalTitle" class="form-label">Назва<span class="text-danger">*</span></label>
+            <input asp-for="OriginalTitle" class="form-control" disabled/>
+            <span class="text-danger" asp-validation-for="OriginalTitle"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Видалити</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+
+    <ul class="text-danger">
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Назва</th>
+                <th scope="col">Мова</th>
+                <th scope="col">Кількість копій</th>
+                <th scope="col">Доступно копій</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bookEdition in Model.Editions)
+            {
+                <tr>
+                    <td>
+                        <a asp-asp-controller="BookEditions" asp-action="Edit" asp-route-id="@bookEdition.BookEditionID">@bookEdition.Title</a>
+                    </td>
+                    <td>@bookEdition.LanguageCode</td>
+                    <td>@bookEdition.TotalCopies</td>
+                    <td>@bookEdition.AvailableCopies</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

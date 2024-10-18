@@ -19,6 +19,8 @@ public interface IBookEditionService
 
     Task<BookEditionDto?> GetBookEditionByIsbnAsync(string isbn);
 
+    Task<List<BookEditionDto>> GetAllBookEditionsAsync();
+
     Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageAsync(int pageNumber, int pageSize);
 
     Task<List<BookEditionDto>> GetBookEditionsByGenreAsync(int genreId);

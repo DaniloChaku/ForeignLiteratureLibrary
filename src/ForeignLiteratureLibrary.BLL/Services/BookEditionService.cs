@@ -78,4 +78,10 @@ public class BookEditionService : IBookEditionService
         var bookEditions = await _bookEditionRepository.GetPageByTitleAsync(title);
         return bookEditions.ConvertAll(be => be.ToDto());
     }
+
+    public async Task<List<BookEditionDto>> GetAllBookEditionsAsync()
+    {
+        var bookEditions = await _bookEditionRepository.GetAllAsync();
+        return bookEditions.ConvertAll(be => be.ToDto());
+    }
 }

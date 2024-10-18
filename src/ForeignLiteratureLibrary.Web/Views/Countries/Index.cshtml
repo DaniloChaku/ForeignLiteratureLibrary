@@ -1,0 +1,35 @@
+﻿@model PaginatedResult<CountryDto>
+
+@{
+    ViewBag.Title = "Країни";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Країни</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Код</th>
+                <th scope="col">Країна</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var country in Model.Items)
+            {
+                <tr>
+                    <td>@country.CountryCode</td>
+                    <td>@country.Name</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@country.CountryCode">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@country.CountryCode">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

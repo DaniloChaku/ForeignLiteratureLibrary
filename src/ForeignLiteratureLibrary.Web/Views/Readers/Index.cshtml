@@ -1,0 +1,43 @@
+﻿@model PaginatedResult<ReaderDto>
+
+@{
+    ViewBag.Title = "Читачі";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Читачі</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Номер квитка</th>
+                <th scope="col">ПІБ</th>
+                <th scope="col">Дата народження</th>
+                <th scope="col">Email</th>
+                <th scope="col">Номер телефону</th>
+                <th scope="col">Дата реєстрації</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reader in Model.Items)
+            {
+                <tr>
+                    <td>@reader.LibraryCardNumber</td>
+                    <td>@reader.FullName</td>
+                    <td>@reader.DateOfBirth.ToShortDateString()</td>
+                    <td>@reader.Email</td>
+                    <td>@reader.Phone</td>
+                    <td>@reader.RegistrationDate.ToShortDateString()</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@reader.LibraryCardNumber">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@reader.LibraryCardNumber">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

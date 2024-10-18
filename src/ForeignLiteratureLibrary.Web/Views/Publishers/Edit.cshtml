@@ -1,0 +1,40 @@
+﻿@model PublisherDto
+
+@{
+    ViewBag.Title = "Редагувати видавництво";
+}
+
+<form asp-action="Edit" method="post">
+    <input hidden asp-for="PublisherID" />
+    <h2 class="text-center mb-3">Редагувати</h2>
+    <div class="row mb-3">
+        <div class="col-md-6 offset-md-3">
+            <label asp-for="Name" class="form-label">Назва</label>
+            <input asp-for="Name" class="form-control" />
+            <span class="text-danger" asp-validation-for="Name"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Редагувати</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+    
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}

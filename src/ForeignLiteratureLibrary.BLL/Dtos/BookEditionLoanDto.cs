@@ -1,4 +1,5 @@
-﻿using ForeignLiteratureLibrary.DAL.Entities;
+﻿using ForeignLiteratureLibrary.BLL.ValidationAttributes;
+using ForeignLiteratureLibrary.DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -17,14 +18,16 @@ public class BookEditionLoanDto
 
     [Required]
     [DataType(DataType.Date)]
-    [Range(typeof(DateTime), "1900-01-01", "9999-12-31", ErrorMessage = "LoanDate must be a valid date.")]
+    [DateLaterThan1900]
     public DateTime LoanDate { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
-    [Range(typeof(DateTime), "1900-01-01", "9999-12-31", ErrorMessage = "DueDate must be a valid date.")]
+    [DateLaterThan1900]
     public DateTime DueDate { get; set; }
 
+    [DataType(DataType.Date)]
+    [DateLaterThan1900]
     public DateTime? ReturnDate { get; set; }
 
     public BookEditionDto? BookEdition { get; set; }

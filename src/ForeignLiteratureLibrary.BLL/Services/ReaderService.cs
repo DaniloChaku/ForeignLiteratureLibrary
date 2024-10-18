@@ -60,4 +60,10 @@ public class ReaderService : IReaderService
             TotalItems = totalItems
         };
     }
+
+    public async Task<List<ReaderDto>> GetAllReadersAsync()
+    {
+        var readers = await _readerRepository.GetAllAsync();
+        return readers.ConvertAll(r => r.ToDto());
+    }
 }

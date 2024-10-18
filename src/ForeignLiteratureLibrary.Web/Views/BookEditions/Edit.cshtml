@@ -1,0 +1,122 @@
+﻿@model BookEditionWithTranslatorsViewModel
+
+@{
+    ViewBag.Title = "Редагувати видання";
+}
+
+<form asp-action="Edit" method="post" class="mb-5">
+    <input hidden asp-for="BookEdition.BookEditionID" />
+
+    <h2 class="text-center mb-3">Редагувати</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="BookEdition.Title" class="form-label">Назва видання<span class="text-danger">*</span></label>
+            <input asp-for="BookEdition.Title" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.Title"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BookEdition.ISBN" class="form-label">ISBN</label>
+            <input asp-for="BookEdition.ISBN" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.ISBN"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="BookEdition.LanguageCode" class="form-label">Мова видання<span class="text-danger">*</span></label>
+            <select asp-for="BookEdition.LanguageCode" class="form-select" asp-items="ViewBag.Languages"
+                    data-val-length-min="1" data-val-length-max="99">
+            </select>
+            <span class="text-danger" asp-validation-for="BookEdition.LanguageCode"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BookEdition.PublisherID" class="form-label">Видавництво</label>
+            <select asp-for="BookEdition.PublisherID" class="form-select" asp-items="ViewBag.Publishers">
+                <option value="">Оберіть видавництво</option>
+            </select>
+            <span class="text-danger" asp-validation-for="BookEdition.PublisherID"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="BookEdition.ShelfLocation" class="form-label">Місце зберігання<span class="text-danger">*</span></label>
+            <input asp-for="BookEdition.ShelfLocation" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.ShelfLocation"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BookEdition.TotalCopies" class="form-label">Загальна кількість примірників<span class="text-danger">*</span></label>
+            <input asp-for="BookEdition.TotalCopies" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.TotalCopies"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="BookEdition.PageCount" class="form-label">Кількість сторінок<span class="text-danger">*</span></label>
+            <input asp-for="BookEdition.PageCount" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.PageCount"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BookEdition.BookID" class="form-label">Книга<span class="text-danger">*</span></label>
+            <select asp-for="BookEdition.BookID" class="form-select" asp-items="ViewBag.Books">
+            </select>
+            <span class="text-danger" asp-validation-for="BookEdition.BookID"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6 offset-md-3">
+            <label class="form-label">Перекладачі</label>
+            <select asp-for="Translators" asp-items="ViewBag.Translators" class="form-select" multiple>
+            </select>
+            <span class="text-info">Зажміть Ctrl і обирайте кілька опцій</span>
+            <span class="text-danger" asp-validation-for="Translators"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Редагувати</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+    
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="h4 text-center">Неповернені примірники</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Дата видачі</th>
+                <th scope="col">Повернути до</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in Model.BookEdition.Loans.Where(l => l.ReturnDate == null))
+            {
+                <tr>
+                    <td>@loan.LoanDate</td>
+                    <td>@loan.DueDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}

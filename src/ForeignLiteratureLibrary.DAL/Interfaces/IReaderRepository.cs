@@ -17,4 +17,6 @@ public interface IReaderRepository
     Task<List<Reader>> GetByFullNameAsync(string fullName);
 
     Task<List<Reader>> GetPageAsync(int pageNumber, int pageSize);
+
+    Task<List<Reader>> GetAllAsync();
 }

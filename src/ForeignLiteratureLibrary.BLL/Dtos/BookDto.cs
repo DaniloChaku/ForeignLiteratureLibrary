@@ -36,7 +36,9 @@ public class BookDto
             BookID = this.BookID,
             OriginalTitle = this.OriginalTitle.Trim(),
             OriginalLanguageCode = this.OriginalLanguageCode.Trim(),
-            PublicationYear = this.PublicationYear
+            PublicationYear = this.PublicationYear,
+            Authors = this.Authors.ConvertAll(a => a.ToEntity()),
+            Genres = this.Genres.ConvertAll(g => g.ToEntity())
         };
     }
 }

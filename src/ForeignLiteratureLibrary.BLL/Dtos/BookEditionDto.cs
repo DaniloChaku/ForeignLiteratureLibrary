@@ -29,11 +29,9 @@ public class BookEditionDto
     public string ShelfLocation { get; set; } = string.Empty;
 
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "TotalCopies must be greater than 0.")]
+    [Range(0, int.MaxValue, ErrorMessage = "TotalCopies must be at least 0.")]
     public int TotalCopies { get; set; }
 
-    [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "AvailableCopies must be non-negative.")]
     public int AvailableCopies { get; set; }
 
     public int BookID { get; set; }

@@ -288,9 +288,10 @@ public static class DbSeedHelper
             BEGIN
                 -- If copies are available, allow the insert
                 INSERT INTO BookEditionLoan (BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate)
-                OUTPUT inserted.BookEditionLoanID
                 SELECT BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate 
                 FROM inserted;
+
+		        SELECT SCOPE_IDENTITY() AS NewID;
             END
             ELSE
             BEGIN

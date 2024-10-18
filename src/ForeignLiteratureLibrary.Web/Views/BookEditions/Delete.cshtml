@@ -1,0 +1,37 @@
+﻿@model BookEditionDto
+
+@{
+    ViewBag.Title = "Видалити книгу";
+}
+
+<form asp-action="Delete" method="post">
+    <input hidden asp-for="BookEditionID"/>
+    <input hidden asp-for="Title"/>
+    <h2 class="text-center mb-3">Видалити</h2>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Title" class="form-label">Назва<span class="text-danger">*</span></label>
+            <input asp-for="Title" class="form-control" disabled />
+            <span class="text-danger" asp-validation-for="Title"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Видалити</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+
+    <ul class="text-danger">
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>

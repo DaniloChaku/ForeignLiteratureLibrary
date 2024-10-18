@@ -1,0 +1,68 @@
+﻿@model BookEditionLoanDto
+
+@{
+    ViewBag.Title = "Редагувати видачу книги";
+}
+
+<form asp-action="Edit" method="post">
+    <input hidden asp-for="BookEditionLoanID" />
+    <h2 class="text-center mb-3">Редагувати</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="LibraryCardNumber" class="form-label">Читач</label>
+            <select asp-for="LibraryCardNumber" asp-items="ViewBag.Readers" class="form-select"></select>
+            <span class="text-danger" asp-validation-for="LibraryCardNumber"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BookEditionID" class="form-label">Книга</label>
+            <select asp-for="BookEditionID" asp-items="ViewBag.BookEditions" class="form-select"></select>
+            <span class="text-danger" asp-validation-for="BookEditionID"></span>
+        </div>
+    </div>
+
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="LoanDate" class="form-label">Дата видачі</label>
+            <input asp-for="LoanDate" class="form-control"/>
+            <span class="text-danger" asp-validation-for="LoanDate"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="DueDate" class="form-label">Запланована дата повернення</label>
+            <input asp-for="DueDate" class="form-control" />
+            <span class="text-danger" asp-validation-for="DueDate"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="ReturnDate" class="form-label">Фактична дата повернення</label>
+            <input asp-for="ReturnDate" class="form-control" />
+            <span class="text-danger" asp-validation-for="ReturnDate"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Редагувати</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+    
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}

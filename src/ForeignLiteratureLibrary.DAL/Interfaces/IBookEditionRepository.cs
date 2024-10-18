@@ -16,6 +16,8 @@ public interface IBookEditionRepository
 
     Task<BookEdition?> GetByIsbnAsync(string isbn);
 
+    Task<List<BookEdition>> GetAllAsync();
+
     Task<List<BookEdition>> GetPageAsync(int pageNumber, int pageSize);
 
     Task<List<BookEdition>> GetPageByGenreAsync(int genreId);

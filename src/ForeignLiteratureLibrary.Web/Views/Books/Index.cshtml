@@ -1,0 +1,41 @@
+﻿@model PaginatedResult<BookDto>
+
+@{
+    ViewBag.Title = "Книги";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Книги</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Назва</th>
+                <th scope="col">Мова</th>
+                <th scope="col">Рік публікації</th>
+                <th scope="col">Автор</th>
+                <th scope="col">Жанр</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in Model.Items)
+            {
+                <tr>
+                    <td>@book.OriginalTitle</td>
+                    <td>@book.OriginalLanguage?.Name</td>
+                    <td>@book.PublicationYear</td>
+                    <td>@string.Join(", ", book.Authors.Select(a => a.FullName))</td>
+                    <td>@string.Join(", ", book.Genres.Select(g => g.Name))</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@book.BookID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@book.BookID">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

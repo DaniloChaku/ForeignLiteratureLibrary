@@ -20,4 +20,6 @@ public interface IReaderService
     Task<List<ReaderDto>> GetReadersByFullNameAsync(string fullName);
 
     Task<PaginatedResult<ReaderDto>> GetReadersPageAsync(int pageNumber, int pageSize);
+
+    Task<List<ReaderDto>> GetAllReadersAsync();
 }   

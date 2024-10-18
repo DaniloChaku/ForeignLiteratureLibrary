@@ -1,0 +1,28 @@
+﻿@model (int currentPage, int totalPages)
+
+@if (Model.totalPages > 1)
+{
+    <nav class="d-flex justify-content-center">
+        <ul class="pagination">
+            <li class="page-item @(Model.currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="1">Перша</a>
+            </li>
+
+            @{
+                int startPage = Math.Max(1, Model.currentPage - 1);
+                int endPage = Math.Min(Model.totalPages, Model.currentPage + 1);
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <li class="page-item @(Model.currentPage == i ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.currentPage == Model.totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@Model.totalPages">Остання</a>
+            </li>
+        </ul>
+    </nav>
+}

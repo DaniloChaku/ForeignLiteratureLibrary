@@ -1,0 +1,53 @@
+﻿@model PaginatedResult<BookEditionDto>
+
+@{
+    ViewBag.Title = "Видання книг";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Видання книг</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">ISBN</th>
+                <th scope="col">Назва</th>
+                <th scope="col">Мова</th>
+                <th scope="col">Жанр</th>
+                <th scope="col">Автор</th>
+                <th scope="col">Перекладач</th>
+                <th scope="col">Видавництво</th>
+                <th scope="col">Кількість сторінок</th>
+                <th scope="col">Кількість примірників</th>
+                <th scope="col">Доступно примірників</th>
+                <th scope="col">Місце знаходження</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bookEdition in Model.Items)
+            {
+                <tr>
+                    <td>@bookEdition.ISBN</td>
+                    <td>@bookEdition.Title</td>
+                    <td>@bookEdition.LanguageCode</td>
+                    <td>@(bookEdition.Book != null ? string.Join(", ", bookEdition.Book.Genres.Select(g => g.Name).ToList()) : "")</td>
+                    <td>@(bookEdition.Book != null ? string.Join(", ", bookEdition.Book.Authors.Select(g => g.FullName).ToList()) : "")</td>
+                    <td>@string.Join(", ", bookEdition.Translators.Select(t => t.FullName))</td>
+                    <td>@bookEdition.Publisher?.Name</td>
+                    <td>@bookEdition.PageCount</td>
+                    <td>@bookEdition.TotalCopies</td>
+                    <td>@bookEdition.AvailableCopies</td>
+                    <td>@bookEdition.ShelfLocation</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@bookEdition.BookEditionID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@bookEdition.BookEditionID">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

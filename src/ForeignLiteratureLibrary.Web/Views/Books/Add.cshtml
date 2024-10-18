@@ -1,0 +1,73 @@
+﻿@model BookWithGenresAndAuthorsViewModel
+
+@{
+    ViewBag.Title = "Додати книгу";
+}
+
+<form asp-action="Add" method="post">
+    <h2 class="text-center mb-3">Додати книгу</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Book.OriginalTitle" class="form-label">Назва<span class="text-danger">*</span></label>
+            <input asp-for="Book.OriginalTitle" class="form-control" />
+            <span class="text-danger" asp-validation-for="Book.OriginalTitle"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Book.OriginalLanguageCode" class="form-label">Мова<span class="text-danger">*</span></label>
+            <select asp-for="Book.OriginalLanguageCode" class="form-select" asp-items="ViewBag.Languages"
+                    data-val-length-min="1" data-val-length-max="99"></select>
+            <span class="text-danger" asp-validation-for="Book.OriginalLanguageCode"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Genres</label>
+            <select asp-for="Genres" asp-items="ViewBag.Genres" class="form-select" multiple>
+                <option value="">Select genres</option>
+            </select>
+            <span class="text-info">Зажміть Ctrl і обирайте кілька опцій</span>
+            <span class="text-danger" asp-validation-for="Genres"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Authors</label>
+            <select asp-for="Authors" asp-items="ViewBag.Authors" class="form-select form-select" multiple>
+                <option value="">Select authors</option>
+            </select>
+            <span class="text-info">Зажміть Ctrl і обирайте кілька опцій</span>
+            <span class="text-danger" asp-validation-for="Authors"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Book.PublicationYear" class="form-label">Publication Year<span class="text-danger">*</span></label>
+            <input asp-for="Book.PublicationYear" class="form-control" />
+            <span class="text-danger" asp-validation-for="Book.PublicationYear"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Add Book</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Back</a>
+        </div>
+    </div>
+
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}

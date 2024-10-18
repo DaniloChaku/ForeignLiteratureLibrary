@@ -140,6 +140,16 @@ public class ReaderRepository : BaseRepository, IReaderRepository
         return readerDictionary.Values.FirstOrDefault();
     }
 
+    public async Task<List<Reader>> GetAllAsync()
+    {
+        const string sql = "SELECT * FROM Reader";
+
+        using var connection = await CreateConnectionAsync();
+        var readers = await connection.QueryAsync<Reader>(sql);
+        return readers.ToList();
+    }
+
+
     public async Task<int> GetCountAsync()
     {
         const string sql = "SELECT COUNT(*) FROM Reader";

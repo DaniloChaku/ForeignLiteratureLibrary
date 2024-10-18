@@ -27,10 +27,11 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
                 INSERT INTO BookEditionLoan 
                 (BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate)
                 VALUES 
-                (@BookEditionID, @LibraryCardNumber, @LoanDate, @DueDate, @ReturnDate);
-                SELECT CAST(SCOPE_IDENTITY() as int)";
+                (@BookEditionID, @LibraryCardNumber, @LoanDate, @DueDate, @ReturnDate);";
 
             using var connection = await CreateConnectionAsync();
+
+            // the LoanID is output in the trigger
             loan.BookEditionLoanID = await connection.QuerySingleAsync<int>(sql, loan);
         }
         catch (SqlException ex) when (ex.Number == 50000 && ex.Message.Contains("No available copies"))
@@ -79,6 +80,10 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, loan);
+        }
+        catch (SqlException ex) when (ex.Number == 50000 && ex.Message.Contains("No available copies"))
+        {
+            throw new BookEditionUnavailableException(ex.Message, ex);
         }
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_BookEdition"))
         {

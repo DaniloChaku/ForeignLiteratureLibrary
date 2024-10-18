@@ -1,0 +1,94 @@
+﻿@model ReaderDto
+
+@{
+    ViewBag.Title = "Редагувати мову";
+}
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="LibraryCardNumber" />
+    <h2 class="text-center mb-3">Редагувати</h2>
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <label asp-for="LibraryCardNumber" class="form-label">Номер картки читача</label>
+            <input asp-for="LibraryCardNumber" class="form-control" disabled/>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label">ПІБ</label>
+            <input asp-for="FullName" class="form-control" />
+            <span class="text-danger" asp-validation-for="FullName"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span class="text-danger" asp-validation-for="Email"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Phone" class="form-label">Номер телефону</label>
+            <input asp-for="Phone" class="form-control" />
+            <span class="text-danger" asp-validation-for="Phone"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <label asp-for="DateOfBirth" class="form-label">Дата народження</label>
+            <input asp-for="DateOfBirth" class="form-control" />
+            <span class="text-danger" asp-validation-for="DateOfBirth"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="RegistrationDate" class="form-label">Дата реєстрації</label>
+            <input asp-for="RegistrationDate" class="form-control" />
+            <span class="text-danger" asp-validation-for="RegistrationDate"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Редагувати</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+    
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Назва книги</th>
+                <th scope="col">Дата видачі</th>
+                <th scope="col">Запланована дата поверення</th>
+                <th scope="col">Фактична дата поверення</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in Model.Loans)
+            {
+                <tr>
+                    <td>@loan.BookEdition?.Title</td>
+                    <td>@loan.LoanDate.ToShortDateString()</td>
+                    <td>@loan.DueDate.ToShortDateString()</td>
+                    <td>@loan.ReturnDate?.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}

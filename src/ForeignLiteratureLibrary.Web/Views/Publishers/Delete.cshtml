@@ -1,0 +1,37 @@
+﻿@model PublisherDto
+
+@{
+    ViewBag.Title = "Видалити видавництво";
+}
+
+<form asp-action="Delete" method="post">
+    <input hidden asp-for="PublisherID"/>
+    <input hidden asp-for="Name"/>
+    <h2 class="text-center mb-3">Видалити</h2>
+    <div class="row mb-3">
+        <div class="col-md-6 offset-md-3">
+            <label asp-for="Name" class="form-label">Назва</label>
+            <input asp-for="Name" class="form-control disabled" disabled />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-danger form-control">Видалити</button>
+            <span class="text-danger">Видавництво не буде видалено, якщо воно пов'язано із книгою</span>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+
+    <ul class="text-danger">
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>

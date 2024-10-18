@@ -1,0 +1,35 @@
+﻿@model PaginatedResult<LanguageDto>
+
+@{
+    ViewBag.Title = "Мови";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Мови</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Код</th>
+                <th scope="col">Мова</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var language in Model.Items)
+            {
+                <tr>
+                    <td>@language.LanguageCode</td>
+                    <td>@language.Name</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@language.LanguageCode">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@language.LanguageCode">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

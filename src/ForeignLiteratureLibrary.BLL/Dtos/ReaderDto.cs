@@ -1,4 +1,5 @@
-﻿using ForeignLiteratureLibrary.DAL.Entities;
+﻿using ForeignLiteratureLibrary.BLL.ValidationAttributes;
+using ForeignLiteratureLibrary.DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -17,7 +18,7 @@ public class ReaderDto
 
     [Required]
     [DataType(DataType.Date)]
-    [Range(typeof(DateTime), "1900-01-01", "9999-12-31", ErrorMessage = "DateOfBirth must be between 1900-01-01 and today.")]
+    [DateBetween1900AndNow(ErrorMessage = "DateOfBirth must be between 1900-01-01 and today.")]
     public DateTime DateOfBirth { get; set; }
 
     [StringLength(255)]
@@ -29,7 +30,7 @@ public class ReaderDto
 
     [Required]
     [DataType(DataType.Date)]
-    [Range(typeof(DateTime), "1900-01-01", "9999-12-31", ErrorMessage = "RegistrationDate must be between 1900-01-01 and today.")]
+    [DateBetween1900AndNow(ErrorMessage = "RegistrationDate must be between 1900-01-01 and today.")]
     public DateTime RegistrationDate { get; set; }
 
     public List<BookEditionLoanDto> Loans { get; set; } =[];
@@ -43,7 +44,7 @@ public class ReaderDto
             DateOfBirth = this.DateOfBirth,
             Email = this.Email?.Trim(),
             Phone = this.Phone?.Trim(),
-            RegistrationDate = this.RegistrationDate,
+            RegistrationDate = this.RegistrationDate.ToUniversalTime(),
             Loans = this.Loans.ConvertAll(l => l.ToEntity())
         };
     }
@@ -60,7 +61,7 @@ public static class ReaderExtensions
             DateOfBirth = reader.DateOfBirth,
             Email = reader.Email?.Trim(),
             Phone = reader.Phone?.Trim(),
-            RegistrationDate = reader.RegistrationDate,
+            RegistrationDate = reader.RegistrationDate.ToLocalTime(),
             Loans = reader.Loans.Select(l => l.ToDto()).ToList()
         };
     }

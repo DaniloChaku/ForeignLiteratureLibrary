@@ -1,0 +1,33 @@
+﻿@model PaginatedResult<GenreDto>
+
+@{
+    ViewBag.Title = "Жанри";
+}
+
+<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
+
+<div class="d-flex flex-column align-content-center gap-3">
+    <h2 class="text-center">Жанри</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Жанр</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var genre in Model.Items)
+            {
+                <tr>
+                    <td>@genre.Name</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-id="@genre.GenreID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@genre.GenreID">Редагувати</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.Page, Model.TotalPages))
+</div>

@@ -1,0 +1,40 @@
+﻿@model LanguageDto
+
+@{
+    ViewBag.Title = "Видалити мову";
+}
+
+<form asp-action="Delete" method="post">
+    <input hidden asp-for="LanguageCode"/>
+    <input hidden asp-for="Name"/>
+    <h2 class="text-center mb-3">Видалити</h2>
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <label asp-for="LanguageCode" class="form-label">Код</label>
+            <input asp-for="LanguageCode" class="form-control disabled" disabled />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Назва</label>
+            <input asp-for="Name" class="form-control disabled" disabled />
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-danger form-control">Видалити</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+
+    <ul class="text-danger">
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>

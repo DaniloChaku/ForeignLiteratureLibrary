@@ -1,0 +1,44 @@
+﻿@model CountryDto
+
+@{
+    ViewBag.Title = "Додати країну";
+}
+
+<form asp-action="Add" method="post">
+    <h2 class="text-center mb-3">Додати</h2>
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <label asp-for="CountryCode" class="form-label">Код</label>
+            <input asp-for="CountryCode" class="form-control" />
+            <span class="text-danger" asp-validation-for="CountryCode"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Назва</label>
+            <input asp-for="Name" class="form-control" />
+            <span class="text-danger" asp-validation-for="Name"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
+            <button type="submit" class="btn btn-primary form-control">Додати</button>
+        </div>
+        <div class="col-6 col-lg-2 col-md-3">
+            <a class="btn btn-secondary form-control" asp-action="Index">Повернутися</a>
+        </div>
+    </div>
+
+    <ul>
+        @if (ViewBag.Errors != null)
+        {
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        }
+    </ul>
+</form>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+}
