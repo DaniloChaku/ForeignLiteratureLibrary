@@ -4,10 +4,27 @@
     ViewBag.Title = "Читачі";
 }
 
-<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
 
-<div class="d-flex flex-column align-content-center gap-3">
+<div class="d-flex flex-column align-content-center gap-3 mt-4">
     <h2 class="text-center">Читачі</h2>
+
+    <div class="float-start d-inline-block">
+        <a class="btn btn-primary" asp-action="Add">Додати</a>
+    </div>
+
+    <div class="row">
+        <form asp-action="Index" method="get" class="col-12 col-md-8 offset-md-2">
+            <div class="input-group">
+                <input type="text" name="searchTerm" class="form-control" placeholder="Пошук...">
+                <select name="searchType" class="form-select">
+                    <option value="fullName">ПІБ</option>
+                    <option value="libraryCardNumber">Номер квитка</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Пошук</button>
+            </div>
+        </form>
+    </div>
+
     <table class="table table-hover">
         <thead>
             <tr>

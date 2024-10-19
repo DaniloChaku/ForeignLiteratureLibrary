@@ -15,10 +15,39 @@ public class ReadersController : Controller
         _readerService = readerService;
     }
 
-    public async Task<IActionResult> Index(int page = 1, int pageSize = PaginationConstants.DefaultPageSize)
+    public async Task<IActionResult> Index(
+        int page = 1, 
+        int pageSize = PaginationConstants.DefaultPageSize, 
+        string? searchTerm = null, 
+        string? searchType = null)
     {
-        var readers = await _readerService.GetReadersPageAsync(page, pageSize);
+        if (!string.IsNullOrEmpty(searchTerm) && !string.IsNullOrEmpty(searchType))
+        {
+            List<ReaderDto> searchResults;
+            if (searchType == "fullName")
+            {
+                searchResults = await _readerService.GetReadersByFullNameAsync(searchTerm);
+            }
+            else if (searchType == "libraryCardNumber")
+            {
+                searchResults = await _readerService.GetReadersByLibraryCardNumberAsync(searchTerm);
+            }
+            else
+            {
+                return BadRequest("Invalid search type");
+            }
 
+            var paginatedResult = new PaginatedResult<ReaderDto>
+            {
+                Items = searchResults,
+                Page = 1,
+                TotalItems = searchResults.Count
+            };
+
+            return View(paginatedResult);
+        }
+
+        var readers = await _readerService.GetReadersPageAsync(page, pageSize);
         return View(readers);
     }
 
