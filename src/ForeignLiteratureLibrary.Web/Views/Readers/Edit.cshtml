@@ -1,16 +1,18 @@
 ﻿@model ReaderDto
 
 @{
-    ViewBag.Title = "Редагувати мову";
+    ViewBag.Title = "Редагувати читача";
 }
 
 <form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="LibraryCardNumber" />
+    <input type="hidden" asp-for="ReaderID" />
+
     <h2 class="text-center mb-3">Редагувати</h2>
+
     <div class="row mb-3">
         <div class="col-md-6 mb-2">
             <label asp-for="LibraryCardNumber" class="form-label">Номер картки читача</label>
-            <input asp-for="LibraryCardNumber" class="form-control" disabled/>
+            <input asp-for="LibraryCardNumber" class="form-control"/>
         </div>
         <div class="col-md-6">
             <label asp-for="FullName" class="form-label">ПІБ</label>
@@ -29,19 +31,6 @@
             <label asp-for="Phone" class="form-label">Номер телефону</label>
             <input asp-for="Phone" class="form-control" />
             <span class="text-danger" asp-validation-for="Phone"></span>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6 mb-2">
-            <label asp-for="DateOfBirth" class="form-label">Дата народження</label>
-            <input asp-for="DateOfBirth" class="form-control" />
-            <span class="text-danger" asp-validation-for="DateOfBirth"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="RegistrationDate" class="form-label">Дата реєстрації</label>
-            <input asp-for="RegistrationDate" class="form-control" />
-            <span class="text-danger" asp-validation-for="RegistrationDate"></span>
         </div>
     </div>
 

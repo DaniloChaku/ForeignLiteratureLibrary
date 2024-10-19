@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("Default")!;
 
 builder.Services.AddScoped<IAuthorRepository>(provider => new AuthorRepository(connectionString))
-    .AddScoped<IBookEditionLoanRepository>(provider => new BookEditionLoanRepository(connectionString))
+    .AddScoped<ILoanRepository>(provider => new LoanRepository(connectionString))
     .AddScoped<IBookEditionRepository>(provider => new BookEditionRepository(connectionString))
     .AddScoped<IBookRepository>(provider => new BookRepository(connectionString))
     .AddScoped<ICountryRepository>(provider => new CountryRepository(connectionString))

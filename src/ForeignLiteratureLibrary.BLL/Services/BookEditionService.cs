@@ -41,12 +41,6 @@ public class BookEditionService : IBookEditionService
         return bookEdition?.ToDto();
     }
 
-    public async Task<BookEditionDto?> GetBookEditionByIsbnAsync(string isbn)
-    {
-        var bookEdition = await _bookEditionRepository.GetByIsbnAsync(isbn);
-        return bookEdition?.ToDto();
-    }
-
     public async Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageAsync(int pageNumber, int pageSize)
     {
         var bookEditions = await _bookEditionRepository.GetPageAsync(pageNumber, pageSize);
@@ -61,22 +55,60 @@ public class BookEditionService : IBookEditionService
         };
     }
 
-    public async Task<List<BookEditionDto>> GetBookEditionsByGenreAsync(int genreId)
+    public async Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByGenreAsync(int genreId, int pageNumber, int pageSize)
     {
-        var bookEditions = await _bookEditionRepository.GetPageByGenreAsync(genreId);
-        return bookEditions.ConvertAll(be => be.ToDto());
+        var bookEditions = await _bookEditionRepository.GetPageByGenreAsync(genreId, pageNumber, pageSize);
+        var totalItems = await _bookEditionRepository.GetCountByGenreAsync(genreId);
+
+        return new PaginatedResult<BookEditionDto>
+        {
+            Items = bookEditions.ConvertAll(be => be.ToDto()),
+            Page = pageNumber,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
     }
 
-    public async Task<List<BookEditionDto>> GetBookEditionsByLanguageAsync(string languageCode)
+    public async Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByLanguageAsync(int languageId, int pageNumber, int pageSize)
     {
-        var bookEditions = await _bookEditionRepository.GetPageByLanguageAsync(languageCode);
-        return bookEditions.ConvertAll(be => be.ToDto());
+        var bookEditions = await _bookEditionRepository.GetPageByLanguageAsync(languageId, pageNumber, pageSize);
+        var totalItems = await _bookEditionRepository.GetCountByLanguageAsync(languageId);
+
+        return new PaginatedResult<BookEditionDto>
+        {
+            Items = bookEditions.ConvertAll(be => be.ToDto()),
+            Page = pageNumber,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
     }
 
-    public async Task<List<BookEditionDto>> GetBookEditionsByTitleAsync(string title)
+    public async Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByTitleAsync(string title, int pageNumber, int pageSize)
     {
-        var bookEditions = await _bookEditionRepository.GetPageByTitleAsync(title);
-        return bookEditions.ConvertAll(be => be.ToDto());
+        var bookEditions = await _bookEditionRepository.GetPageByTitleAsync(title, pageNumber, pageSize);
+        var totalItems = await _bookEditionRepository.GetCountByTitleAsync(title);
+
+        return new PaginatedResult<BookEditionDto>
+        {
+            Items = bookEditions.ConvertAll(be => be.ToDto()),
+            Page = pageNumber,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
+    }
+
+    public async Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByIsbnAsync(string isbn, int pageNumber, int pageSize)
+    {
+        var bookEditions = await _bookEditionRepository.GetPageByIsbnAsync(isbn, pageNumber, pageSize);
+        var totalItems = await _bookEditionRepository.GetCountByIsbnAsync(isbn);
+
+        return new PaginatedResult<BookEditionDto>
+        {
+            Items = bookEditions.ConvertAll(be => be.ToDto()),
+            Page = pageNumber,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
     }
 
     public async Task<List<BookEditionDto>> GetAllBookEditionsAsync()

@@ -5,9 +5,7 @@ namespace ForeignLiteratureLibrary.BLL.Dtos;
 
 public class LanguageDto
 {
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "LanguageCode must be 2 or 3 characters long.")]
-    public string LanguageCode { get; set; } = string.Empty;
+    public int LanguageID { get; set; }
 
     [Required]
     [StringLength(50, ErrorMessage = "Name cannot exceed 50 characters.")]
@@ -17,8 +15,8 @@ public class LanguageDto
     {
         return new Language
         {
-            LanguageCode = this.LanguageCode.Trim().ToLower(),
-            Name = this.Name.Trim()
+            LanguageID = this.LanguageID,
+            LanguageName = this.Name.Trim()
         };
     }
 }
@@ -29,8 +27,8 @@ public static class LanguageExtensions
     {
         return new LanguageDto
         {
-            LanguageCode = language.LanguageCode.Trim(),
-            Name = language.Name.Trim()
+            LanguageID = language.LanguageID,
+            Name = language.LanguageName.Trim()
         };
     }
 }

@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ForeignLiteratureLibrary.Web.Controllers;
 
-public class BookEditionLoansController : Controller
+public class LoansController : Controller
 {
     private readonly IBookEditionLoanService _bookEditionLoanService;
     private readonly IBookEditionService _bookEditionService;
     private readonly IReaderService _readerService;
 
-    public BookEditionLoansController(
+    public LoansController(
         IBookEditionLoanService bookEditionLoanService,
         IBookEditionService bookEditionService,
         IReaderService readerService)
@@ -38,7 +38,7 @@ public class BookEditionLoansController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add(BookEditionLoanDto bookEditionLoan)
+    public async Task<IActionResult> Add(LoanDto bookEditionLoan)
     {
         if (!ModelState.IsValid)
         {
@@ -87,7 +87,7 @@ public class BookEditionLoansController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(BookEditionLoanDto bookEditionLoan)
+    public async Task<IActionResult> Edit(LoanDto bookEditionLoan)
     {
         if (!ModelState.IsValid)
         {
@@ -136,9 +136,9 @@ public class BookEditionLoansController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Delete(BookEditionLoanDto bookEditionLoan)
+    public async Task<IActionResult> Delete(LoanDto bookEditionLoan)
     {
-        await _bookEditionLoanService.DeleteLoanAsync(bookEditionLoan.BookEditionLoanID);
+        await _bookEditionLoanService.DeleteLoanAsync(bookEditionLoan.LoanID);
 
 
         return RedirectToAction(nameof(Index));
@@ -159,7 +159,7 @@ public class BookEditionLoansController : Controller
         var readers = await _readerService.GetAllReadersAsync();
         return readers.Select(r => new SelectListItem
         {
-            Value = r.LibraryCardNumber.ToString(),
+            Value = r.ReaderID.ToString(),
             Text = $"{r.LibraryCardNumber}: {r.FullName}"
         }).ToList();
     }

@@ -167,7 +167,7 @@ public class BookEditionsController : Controller
         var languages = await _languageService.GetAllLanguagesAsync();
         return languages.Select(l => new SelectListItem
         {
-            Value = l.LanguageCode.ToString(),
+            Value = l.LanguageID.ToString(),
             Text = l.Name
         }).ToList();
     }

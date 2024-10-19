@@ -9,15 +9,15 @@ namespace ForeignLiteratureLibrary.BLL.Interfaces;
 
 public interface IBookEditionLoanService
 {
-    Task AddLoanAsync(BookEditionLoanDto loanDto);
+    Task AddLoanAsync(LoanDto loanDto);
 
-    Task UpdateLoanAsync(BookEditionLoanDto loanDto);
+    Task UpdateLoanAsync(LoanDto loanDto);
 
     Task DeleteLoanAsync(int loanId);
 
-    Task<BookEditionLoanDto?> GetLoanByIdAsync(int loanId);
+    Task<LoanDto?> GetLoanByIdAsync(int loanId);
 
-    Task<PaginatedResult<BookEditionLoanDto>> GetLoansPageAsync(int pageNumber, int pageSize);
+    Task<PaginatedResult<LoanDto>> GetLoansPageAsync(int pageNumber, int pageSize);
 
-    Task<PaginatedResult<BookEditionLoanDto>> GetOverdueLoansPageAsync(int pageNumber, int pageSize);
+    Task<PaginatedResult<LoanDto>> GetOverdueLoansPageAsync(int pageNumber, int pageSize);
 }

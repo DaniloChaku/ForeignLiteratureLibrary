@@ -13,11 +13,13 @@ public interface IReaderService
 
     Task UpdateReaderAsync(ReaderDto readerDto);
 
-    Task DeleteReaderAsync(string libraryCardNumber);
+    Task DeleteReaderAsync(int readerId);
 
-    Task<ReaderDto?> GetReaderByLibraryCardNumberAsync(string libraryCardNumber);
+    Task<ReaderDto?> GetReaderByIdAsync(int readerId);
 
     Task<List<ReaderDto>> GetReadersByFullNameAsync(string fullName);
+
+    Task<List<ReaderDto>> GetReadersByLibraryCardNumberAsync(string libraryCardNumber);
 
     Task<PaginatedResult<ReaderDto>> GetReadersPageAsync(int pageNumber, int pageSize);
 

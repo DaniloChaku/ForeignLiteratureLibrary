@@ -1,4 +1,4 @@
-﻿@model PaginatedResult<BookEditionLoanDto>
+﻿@model PaginatedResult<LoanDto>
 
 @{
     ViewBag.Title = "Видачі книг";
@@ -24,12 +24,12 @@
             {
                 <tr>
                     <td>
-                        <a asp-controller="BookEditions" asp-action="Edit" asp-route-id="@loan.BookEditionLoanID" class="text-decoration-none text-black">
+                        <a asp-controller="BookEditions" asp-action="Edit" asp-route-id="@loan.LoanID" class="text-decoration-none text-black">
                             @loan.BookEdition?.Title, ISBN: @loan.BookEdition?.ISBN
                         </a>
                     </td>
                     <td>
-                        <a asp-controller="Readers" asp-action="Edit" asp-route-id="@loan.LibraryCardNumber" class="text-decoration-none text-black">
+                        <a asp-controller="Readers" asp-action="Edit" asp-route-id="@loan.ReaderID" class="text-decoration-none text-black">
                             @loan.Reader?.LibraryCardNumber, ПІБ: @loan.Reader?.FullName
                         </a>
                     </td>
@@ -37,8 +37,8 @@
                     <td>@loan.DueDate</td>
                     <td>@loan.ReturnDate</td>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@loan.BookEditionLoanID">Видалити</a>
-                        <a asp-action="Edit" asp-route-id="@loan.BookEditionLoanID">Редагувати</a>
+                        <a asp-action="Delete" asp-route-id="@loan.LoanID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@loan.LoanID">Редагувати</a>
                     </td>
                 </tr>
             }

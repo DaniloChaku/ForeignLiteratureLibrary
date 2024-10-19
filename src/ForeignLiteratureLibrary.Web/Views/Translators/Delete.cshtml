@@ -6,11 +6,20 @@
 
 <form asp-action="Delete" method="post">
     <input hidden asp-for="TranslatorID"/>
+    <input hidden asp-for="CountryID"/>
+
     <h2 class="text-center mb-3">Видалити</h2>
+
     <div class="row mb-3">
-        <div class="col-md-6 offset-md-3">
+        <div class="col-md-6">
             <label asp-for="FullName" class="form-label">ПІБ</label>
             <input asp-for="FullName" class="form-control disabled" disabled />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CountryID" class="form-label">Країна</label>
+            <select asp-for="CountryID" asp-items="ViewBag.Countries" class="form-select" disabled>
+            </select>
+            <span class="text-danger" asp-validation-for="CountryID"></span>
         </div>
     </div>
 

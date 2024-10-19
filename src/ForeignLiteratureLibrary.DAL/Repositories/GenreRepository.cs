@@ -17,15 +17,15 @@ public class GenreRepository : BaseRepository, IGenreRepository
         try
         {
             const string sql = @"
-                INSERT INTO Genre (Name)
-                OUTPUT INSERTED.GenreID
-                VALUES (@Name)";
+            INSERT INTO Genre (GenreName)
+            OUTPUT INSERTED.GenreID
+            VALUES (@GenreName)";
 
             using var connection = await CreateConnectionAsync();
             var genreId = await connection.ExecuteScalarAsync<int>(sql, genre);
             genre.GenreID = genreId;
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Genre_Name"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_GenreName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot add the genre because the name cannot be empty", ex);
@@ -33,7 +33,7 @@ public class GenreRepository : BaseRepository, IGenreRepository
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
             throw new UniqueConstraintViolationException(
-                $"Cannot add the genre because the name '{genre.Name}' already exists", ex);
+                $"Cannot add the genre because the name '{genre.GenreName}' already exists", ex);
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
@@ -47,14 +47,14 @@ public class GenreRepository : BaseRepository, IGenreRepository
         try
         {
             const string sql = @"
-                UPDATE Genre 
-                SET Name = @Name
-                WHERE GenreID = @GenreID";
+            UPDATE Genre 
+            SET GenreName = @GenreName
+            WHERE GenreID = @GenreID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, genre);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Genre_Name"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_GenreName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot update the genre because the name cannot be empty", ex);
@@ -62,7 +62,7 @@ public class GenreRepository : BaseRepository, IGenreRepository
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
             throw new UniqueConstraintViolationException(
-                $"Cannot update the genre because the name '{genre.Name}' already exists", ex);
+                $"Cannot update the genre because the name '{genre.GenreName}' already exists", ex);
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
@@ -76,8 +76,8 @@ public class GenreRepository : BaseRepository, IGenreRepository
         try
         {
             const string sql = @"
-                DELETE FROM Genre 
-                WHERE GenreID = @GenreID";
+            DELETE FROM Genre 
+            WHERE GenreID = @GenreID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, new { GenreID = genreId });
@@ -92,12 +92,27 @@ public class GenreRepository : BaseRepository, IGenreRepository
     public async Task<Genre?> GetByIdAsync(int genreId)
     {
         const string sql = @"
-                SELECT GenreID, Name 
-                FROM Genre 
-                WHERE GenreID = @GenreId";
+        SELECT g.GenreID, g.GenreName, b.BookID, b.OriginalTitle
+        FROM Genre g
+        LEFT JOIN BookGenre bg ON g.GenreID = bg.GenreID
+        LEFT JOIN Book b ON bg.BookID = b.BookID
+        WHERE g.GenreID = @GenreID";
 
         using var connection = await CreateConnectionAsync();
-        return await connection.QuerySingleOrDefaultAsync<Genre>(sql, new { GenreId = genreId });
+        var genreWithBooks = await connection.QueryAsync<Genre, Book, Genre>(
+            sql,
+            (genre, book) =>
+            {
+                if (book != null)
+                {
+                    genre.Books.Add(book);
+                }
+                return genre;
+            },
+            new { GenreID = genreId },
+            splitOn: "BookID");
+
+        return genreWithBooks.FirstOrDefault();
     }
 
     public async Task<int> GetCountAsync()
@@ -111,11 +126,11 @@ public class GenreRepository : BaseRepository, IGenreRepository
     public async Task<List<Genre>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT GenreID, Name
-                FROM Genre
-                ORDER BY Name
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+            SELECT GenreID, GenreName
+            FROM Genre
+            ORDER BY GenreName
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
         var genres = await connection.QueryAsync<Genre>(sql,
@@ -131,9 +146,9 @@ public class GenreRepository : BaseRepository, IGenreRepository
     public async Task<List<Genre>> GetAllAsync()
     {
         const string sql = @"
-                SELECT GenreID, Name
-                FROM Genre
-                ORDER BY Name";
+            SELECT GenreID, GenreName
+            FROM Genre
+            ORDER BY GenreName";
 
         using var connection = await CreateConnectionAsync();
         var genres = await connection.QueryAsync<Genre>(sql);

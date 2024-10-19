@@ -6,33 +6,33 @@ using Microsoft.Data.SqlClient;
 
 namespace ForeignLiteratureLibrary.DAL.Repositories;
 
-public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanRepository
+public class LoanRepository : BaseRepository, ILoanRepository
 {
-    public BookEditionLoanRepository(string connectionString) : base(connectionString)
+    public LoanRepository(string connectionString) : base(connectionString)
     {
     }
 
     private const string BaseSelectQuery = @"
             SELECT 
-                bel.*, be.*, r.*
-            FROM BookEditionLoan bel
-            JOIN BookEdition be ON bel.BookEditionID = be.BookEditionID
-            JOIN Reader r ON bel.LibraryCardNumber = r.LibraryCardNumber";
+                l.*, be.*, r.*
+            FROM Loan l
+            JOIN BookEdition be ON l.BookEditionID = be.BookEditionID
+            JOIN Reader r ON l.ReaderID = r.ReaderID";
 
-    public async Task AddAsync(BookEditionLoan loan)
+    public async Task AddAsync(Loan loan)
     {
         try
         {
             const string sql = @"
-                INSERT INTO BookEditionLoan 
-                (BookEditionID, LibraryCardNumber, LoanDate, DueDate, ReturnDate)
+                INSERT INTO Loan 
+                (BookEditionID, ReaderID, LoanDate, DueDate, ReturnDate)
                 VALUES 
-                (@BookEditionID, @LibraryCardNumber, @LoanDate, @DueDate, @ReturnDate);";
+                (@BookEditionID, @ReaderID, @LoanDate, @DueDate, @ReturnDate);";
 
             using var connection = await CreateConnectionAsync();
 
             // the LoanID is output in the trigger
-            loan.BookEditionLoanID = await connection.QuerySingleAsync<int>(sql, loan);
+            loan.LoanID = await connection.QuerySingleAsync<int>(sql, loan);
         }
         catch (SqlException ex) when (ex.Number == 50000 && ex.Message.Contains("No available copies"))
         {
@@ -46,7 +46,7 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_Reader"))
         {
             throw new ForeignKeyViolationException(
-                $"Cannot add the loan because the reader with library card number '{loan.LibraryCardNumber}' does not exist", ex);
+                $"Cannot add the loan because the reader with library card number '{loan.ReaderID}' does not exist", ex);
         }
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_DueDate"))
         {
@@ -65,18 +65,18 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
         }
     }
 
-    public async Task UpdateAsync(BookEditionLoan loan)
+    public async Task UpdateAsync(Loan loan)
     {
         try
         {
             const string sql = @"
-                UPDATE BookEditionLoan 
+                UPDATE Loan 
                 SET BookEditionID = @BookEditionID,
-                    LibraryCardNumber = @LibraryCardNumber,
+                    ReaderID = @ReaderID,
                     LoanDate = @LoanDate,
                     DueDate = @DueDate,
                     ReturnDate = @ReturnDate
-                WHERE BookEditionLoanID = @BookEditionLoanID";
+                WHERE LoanID = @LoanID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, loan);
@@ -93,7 +93,7 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_BookLoan_Reader"))
         {
             throw new ForeignKeyViolationException(
-                $"Cannot update the loan because the reader with library card number '{loan.LibraryCardNumber}' does not exist", ex);
+                $"Cannot update the loan because the reader with library card number '{loan.ReaderID}' does not exist", ex);
         }
         catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_DueDate"))
         {
@@ -116,7 +116,7 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
     {
         try
         {
-            const string sql = "DELETE FROM BookEditionLoan WHERE BookEditionLoanID = @LoanId";
+            const string sql = "DELETE FROM Loan WHERE LoanID = @LoanId";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, new { LoanId = loanId });
@@ -128,12 +128,12 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
         }
     }
 
-    public async Task<BookEditionLoan?> GetByIdAsync(int loanId)
+    public async Task<Loan?> GetByIdAsync(int loanId)
     {
-        var sql = $"{BaseSelectQuery} WHERE bel.BookEditionLoanID = @LoanId";
+        var sql = $"{BaseSelectQuery} WHERE l.LoanID = @LoanId";
 
         using var connection = await CreateConnectionAsync();
-        var loans = await connection.QueryAsync<BookEditionLoan, BookEdition, Reader, BookEditionLoan>(
+        var loans = await connection.QueryAsync<Loan, BookEdition, Reader, Loan>(
             sql,
             (loan, bookEdition, reader) =>
             {
@@ -142,7 +142,7 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
                 return loan;
             },
             new { LoanId = loanId },
-            splitOn: "ISBN,LibraryCardNumber"
+            splitOn: "BookEditionID,ReaderID"
         );
 
         return loans.FirstOrDefault();
@@ -150,21 +150,21 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
 
     public async Task<int> GetCountAsync()
     {
-        const string sql = "SELECT COUNT(*) FROM BookEditionLoan";
+        const string sql = "SELECT COUNT(*) FROM Loan";
 
         using var connection = await CreateConnectionAsync();
         return await connection.ExecuteScalarAsync<int>(sql);
     }
 
-    public async Task<List<BookEditionLoan>> GetPageAsync(int pageNumber, int pageSize)
+    public async Task<List<Loan>> GetPageAsync(int pageNumber, int pageSize)
     {
         var sql = $@"{BaseSelectQuery}
-                ORDER BY bel.LoanDate DESC
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+        ORDER BY l.LoanDate DESC
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
-        var loans = await connection.QueryAsync<BookEditionLoan, BookEdition, Reader, BookEditionLoan>(
+        var loans = await connection.QueryAsync<Loan, BookEdition, Reader, Loan>(
             sql,
             (loan, bookEdition, reader) =>
             {
@@ -177,22 +177,22 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
                 Offset = (pageNumber - 1) * pageSize,
                 PageSize = pageSize
             },
-            splitOn: "ISBN,LibraryCardNumber"
+            splitOn: "BookEditionID,ReaderID"
         );
 
         return loans.ToList();
     }
 
-    public async Task<List<BookEditionLoan>> GetOverduePageAsync(int pageNumber, int pageSize)
+    public async Task<List<Loan>> GetOverduePageAsync(int pageNumber, int pageSize)
     {
         var sql = $@"{BaseSelectQuery}
-                WHERE bel.ReturnDate IS NULL AND bel.DueDate < GETDATE()
-                ORDER BY bel.DueDate
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+        WHERE l.ReturnDate IS NULL AND l.DueDate < GETDATE()
+        ORDER BY l.DueDate
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
-        var loans = await connection.QueryAsync<BookEditionLoan, BookEdition, Reader, BookEditionLoan>(
+        var loans = await connection.QueryAsync<Loan, BookEdition, Reader, Loan>(
             sql,
             (loan, bookEdition, reader) =>
             {
@@ -205,7 +205,7 @@ public class BookEditionLoanRepository : BaseRepository, IBookEditionLoanReposit
                 Offset = (pageNumber - 1) * pageSize,
                 PageSize = pageSize
             },
-            splitOn: "ISBN,LibraryCardNumber"
+            splitOn: "BookEditionID,ReaderID"
         );
 
         return loans.ToList();

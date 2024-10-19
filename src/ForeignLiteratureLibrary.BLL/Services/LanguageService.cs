@@ -30,14 +30,14 @@ public class LanguageService : ILanguageService
         await _languageRepository.UpdateAsync(language);
     }
 
-    public async Task DeleteLanguageAsync(string languageCode)
+    public async Task DeleteLanguageAsync(int languageId)
     {
-        await _languageRepository.DeleteAsync(languageCode);
+        await _languageRepository.DeleteAsync(languageId);
     }
 
-    public async Task<LanguageDto?> GetLanguageByCodeAsync(string languageCode)
+    public async Task<LanguageDto?> GetLanguageByIdAsync(int languageId)
     {
-        var language = await _languageRepository.GetByCodeAsync(languageCode);
+        var language = await _languageRepository.GetByIdAsync(languageId);
         return language?.ToDto();
     }
 

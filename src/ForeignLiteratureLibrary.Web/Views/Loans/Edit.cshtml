@@ -1,18 +1,18 @@
-﻿@model BookEditionLoanDto
+﻿@model LoanDto
 
 @{
     ViewBag.Title = "Редагувати видачу книги";
 }
 
 <form asp-action="Edit" method="post">
-    <input hidden asp-for="BookEditionLoanID" />
+    <input hidden asp-for="LoanID" />
     <h2 class="text-center mb-3">Редагувати</h2>
 
     <div class="row mb-3">
         <div class="col-md-6">
-            <label asp-for="LibraryCardNumber" class="form-label">Читач</label>
-            <select asp-for="LibraryCardNumber" asp-items="ViewBag.Readers" class="form-select"></select>
-            <span class="text-danger" asp-validation-for="LibraryCardNumber"></span>
+            <label asp-for="ReaderID" class="form-label">Читач</label>
+            <select asp-for="ReaderID" asp-items="ViewBag.Readers" class="form-select"></select>
+            <span class="text-danger" asp-validation-for="ReaderID"></span>
         </div>
         <div class="col-md-6">
             <label asp-for="BookEditionID" class="form-label">Книга</label>

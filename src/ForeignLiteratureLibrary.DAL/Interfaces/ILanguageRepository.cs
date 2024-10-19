@@ -8,9 +8,9 @@ public interface ILanguageRepository
 
     Task UpdateAsync(Language language);
 
-    Task DeleteAsync(string languageCode);
+    Task DeleteAsync(int languageId);
 
-    Task<Language?> GetByCodeAsync(string languageCode);
+    Task<Language?> GetByIdAsync(int languageId);
 
     Task<int> GetCountAsync();
 

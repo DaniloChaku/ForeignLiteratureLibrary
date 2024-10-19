@@ -5,13 +5,13 @@
 }
 
 <form asp-action="Delete" method="post">
-    <input hidden asp-for="LanguageCode"/>
+    <input hidden asp-for="LanguageID"/>
     <input hidden asp-for="Name"/>
     <h2 class="text-center mb-3">Видалити</h2>
     <div class="row mb-3">
         <div class="col-md-6 mb-2">
-            <label asp-for="LanguageCode" class="form-label">Код</label>
-            <input asp-for="LanguageCode" class="form-control disabled" disabled />
+            <label asp-for="LanguageID" class="form-label">Код</label>
+            <input asp-for="LanguageID" class="form-control disabled" disabled />
         </div>
         <div class="col-md-6">
             <label asp-for="Name" class="form-label">Назва</label>

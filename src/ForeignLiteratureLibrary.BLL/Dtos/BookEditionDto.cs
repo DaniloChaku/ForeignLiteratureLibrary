@@ -16,9 +16,7 @@ public class BookEditionDto
     [StringLength(255, ErrorMessage = "Title cannot exceed 255 characters.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "LanguageCode must be 2 or 3 characters long.")]
-    public string LanguageCode { get; set; } = string.Empty;
+    public int LanguageID { get; set; }
 
     [Required]
     [Range(1, int.MaxValue, ErrorMessage = "PageCount must be greater than 0.")]
@@ -34,6 +32,9 @@ public class BookEditionDto
 
     public int AvailableCopies { get; set; }
 
+    [Range(0, int.MaxValue, ErrorMessage = "PublicationYear must be a positive number.")]
+    public int EditionPublicationYear { get; set; }
+
     public int BookID { get; set; }
 
     public int? PublisherID { get; set; }
@@ -42,7 +43,7 @@ public class BookEditionDto
     public LanguageDto? Language { get; set; }
     public PublisherDto? Publisher { get; set; }
     public List<TranslatorDto> Translators { get; set; } = [];
-    public List<BookEditionLoanDto> Loans { get; set; } = [];
+    public List<LoanDto> Loans { get; set; } = [];
 
     public BookEdition ToEntity()
     {
@@ -50,8 +51,8 @@ public class BookEditionDto
         {
             BookEditionID = this.BookEditionID,
             ISBN = this.ISBN?.Trim(),
-            Title = this.Title.Trim(),
-            LanguageCode = this.LanguageCode.Trim(),
+            EditionTitle = this.Title.Trim(),
+            LanguageID = this.LanguageID,
             PageCount = this.PageCount,
             ShelfLocation = this.ShelfLocation.Trim(),
             TotalCopies = this.TotalCopies,
@@ -72,8 +73,8 @@ public static class BookEditionExtensions
         {
             BookEditionID = bookEdition.BookEditionID,
             ISBN = bookEdition.ISBN?.Trim(),
-            Title = bookEdition.Title.Trim(),
-            LanguageCode = bookEdition.LanguageCode.Trim(),
+            Title = bookEdition.EditionTitle.Trim(),
+            LanguageID = bookEdition.LanguageID,
             PageCount = bookEdition.PageCount,
             ShelfLocation = bookEdition.ShelfLocation.Trim(),
             TotalCopies = bookEdition.TotalCopies,

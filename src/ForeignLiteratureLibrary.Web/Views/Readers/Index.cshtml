@@ -13,10 +13,8 @@
             <tr>
                 <th scope="col">Номер квитка</th>
                 <th scope="col">ПІБ</th>
-                <th scope="col">Дата народження</th>
                 <th scope="col">Email</th>
                 <th scope="col">Номер телефону</th>
-                <th scope="col">Дата реєстрації</th>
                 <th scope="col">Дії</th>
             </tr>
         </thead>
@@ -26,13 +24,11 @@
                 <tr>
                     <td>@reader.LibraryCardNumber</td>
                     <td>@reader.FullName</td>
-                    <td>@reader.DateOfBirth.ToShortDateString()</td>
                     <td>@reader.Email</td>
                     <td>@reader.Phone</td>
-                    <td>@reader.RegistrationDate.ToShortDateString()</td>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@reader.LibraryCardNumber">Видалити</a>
-                        <a asp-action="Edit" asp-route-id="@reader.LibraryCardNumber">Редагувати</a>
+                        <a asp-action="Delete" asp-route-id="@reader.ReaderID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@reader.ReaderID">Редагувати</a>
                     </td>
                 </tr>
             }

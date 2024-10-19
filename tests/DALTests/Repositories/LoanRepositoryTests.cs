@@ -5,15 +5,15 @@ using ForeignLiteratureLibrary.DAL.Repositories;
 
 namespace DALTests.Repositories;
 
-public class BookEditionLoanRepositoryTests : IDisposable
+public class LoanRepositoryTests : IDisposable
 {
-    private readonly BookEditionLoanRepository _repository;
+    private readonly LoanRepository _repository;
     private readonly string _connectionString = TestConnectionStringHelper.ConnectionString;
     private bool _disposed;
 
-    public BookEditionLoanRepositoryTests()
+    public LoanRepositoryTests()
     {
-        _repository = new BookEditionLoanRepository(_connectionString);
+        _repository = new LoanRepository(_connectionString);
         DbSeedHelper.SeedDb(_connectionString);
     }
 
@@ -27,7 +27,7 @@ public class BookEditionLoanRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result!.BookEdition.Should().NotBeNull();
         result.Reader.Should().NotBeNull();
-        result.LibraryCardNumber.Should().Be("1001");
+        result.ReaderID.Should().Be(1);
         result.BookEdition!.ISBN.Should().Be("978-0-14-023750-4");
     }
 
@@ -46,10 +46,10 @@ public class BookEditionLoanRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewLoan()
     {
         // Arrange
-        var newLoan = new BookEditionLoan
+        var newLoan = new Loan
         {
             BookEditionID = 3,
-            LibraryCardNumber = "1003",
+            ReaderID = 1,
             LoanDate = DateTime.Now,
             DueDate = DateTime.Now.AddDays(14)
         };
@@ -58,10 +58,10 @@ public class BookEditionLoanRepositoryTests : IDisposable
         await _repository.AddAsync(newLoan);
 
         // Assert
-        var addedLoan = await _repository.GetByIdAsync(newLoan.BookEditionLoanID);
+        var addedLoan = await _repository.GetByIdAsync(newLoan.LoanID);
         addedLoan.Should().NotBeNull();
         addedLoan!.BookEditionID.Should().Be(newLoan.BookEditionID);
-        addedLoan.LibraryCardNumber.Should().Be(newLoan.LibraryCardNumber);
+        addedLoan.ReaderID.Should().Be(newLoan.ReaderID);
     }
 
     [Fact]

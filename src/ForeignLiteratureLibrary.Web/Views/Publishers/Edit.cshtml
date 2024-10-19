@@ -8,10 +8,16 @@
     <input hidden asp-for="PublisherID" />
     <h2 class="text-center mb-3">Редагувати</h2>
     <div class="row mb-3">
-        <div class="col-md-6 offset-md-3">
-            <label asp-for="Name" class="form-label">Назва</label>
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Назва<span class="text-danger">*</span></label>
             <input asp-for="Name" class="form-control" />
             <span class="text-danger" asp-validation-for="Name"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CountryID" class="form-label">Країна<span class="text-danger">*</span></label>
+            <select asp-for="CountryID" asp-items="ViewBag.Countries" class="form-select">
+            </select>
+            <span class="text-danger" asp-validation-for="CountryID"></span>
         </div>
     </div>
 

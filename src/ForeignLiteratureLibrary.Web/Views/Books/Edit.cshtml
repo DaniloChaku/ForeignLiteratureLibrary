@@ -14,10 +14,9 @@
             <span class="text-danger" asp-validation-for="Book.OriginalTitle"></span>
         </div>
         <div class="col-md-6">
-            <label asp-for="Book.OriginalLanguageCode" class="form-label">Мова<span class="text-danger">*</span></label>
-            <select asp-for="Book.OriginalLanguageCode" class="form-select" asp-items="ViewBag.Languages"
-                    data-val-length-min="1" data-val-length-max="99"></select>
-            <span class="text-danger" asp-validation-for="Book.OriginalLanguageCode"></span>
+            <label asp-for="Book.OriginalLanguageID" class="form-label">Мова<span class="text-danger">*</span></label>
+            <select asp-for="Book.OriginalLanguageID" class="form-select" asp-items="ViewBag.Languages"></select>
+            <span class="text-danger" asp-validation-for="Book.OriginalLanguageID"></span>
         </div>
     </div>
 
@@ -85,7 +84,7 @@
                     <td>
                         <a asp-asp-controller="BookEditions" asp-action="Edit" asp-route-id="@bookEdition.BookEditionID">@bookEdition.Title</a>
                     </td>
-                    <td>@bookEdition.LanguageCode</td>
+                    <td>@bookEdition.LanguageID</td>
                     <td>@bookEdition.TotalCopies</td>
                     <td>@bookEdition.AvailableCopies</td>
                 </tr>

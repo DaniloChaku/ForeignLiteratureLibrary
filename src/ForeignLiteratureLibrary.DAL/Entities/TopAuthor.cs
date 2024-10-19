@@ -3,6 +3,6 @@
 public class TopAuthor
 {
     public int AuthorId { get; set; }
-    public string FullName { get; set; } = string.Empty;
+    public string AuthorFullName { get; set; } = string.Empty;
     public int LoanCount { get; set; }
 }

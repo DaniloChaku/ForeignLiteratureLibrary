@@ -27,7 +27,7 @@ public class PublisherRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.PublisherID.Should().Be(1);
-        result.Name.Should().Be("Penguin Books");
+        result.PublisherName.Should().Be("Penguin Books");
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class PublisherRepositoryTests : IDisposable
 
         // Assert
         results.Should().HaveCount(4);
-        results.Select(p => p.Name).Should().BeEquivalentTo(
+        results.Select(p => p.PublisherName).Should().BeEquivalentTo(
             "Penguin Books", "Hachette Livre", "HarperCollins", "Simon and Schuster");
     }
 
@@ -78,7 +78,7 @@ public class PublisherRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewPublisher()
     {
         // Arrange
-        var newPublisher = new Publisher { Name = "Simon & Schuster" };
+        var newPublisher = new Publisher { PublisherName = "Simon & Schuster", CountryID = 1 };
 
         // Act
         await _repository.AddAsync(newPublisher);
@@ -87,7 +87,7 @@ public class PublisherRepositoryTests : IDisposable
         newPublisher.PublisherID.Should().BeGreaterThan(0);
         var result = await _repository.GetByIdAsync(newPublisher.PublisherID);
         result.Should().NotBeNull();
-        result!.Name.Should().Be("Simon & Schuster");
+        result!.PublisherName.Should().Be("Simon & Schuster");
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class PublisherRepositoryTests : IDisposable
         var publishers = await _repository.GetAllAsync();
         var publisherToUpdate = publishers[0];
         var newName = "Penguin Random House";
-        publisherToUpdate.Name = newName;
+        publisherToUpdate.PublisherName = newName;
 
         // Act
         await _repository.UpdateAsync(publisherToUpdate);
@@ -105,7 +105,7 @@ public class PublisherRepositoryTests : IDisposable
 
         // Assert
         updatedPublisher.Should().NotBeNull();
-        updatedPublisher!.Name.Should().Be(newName);
+        updatedPublisher!.PublisherName.Should().Be(newName);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class PublisherRepositoryTests : IDisposable
     public async Task AddAsync_DuplicateName_Allowed()
     {
         // Arrange
-        var duplicatePublisher = new Publisher { Name = "Penguin Books" };
+        var duplicatePublisher = new Publisher { PublisherName = "Penguin Books", CountryID = 1 };
 
         // Act
         Func<Task> act = async () => await _repository.AddAsync(duplicatePublisher);
@@ -142,7 +142,7 @@ public class PublisherRepositoryTests : IDisposable
     public async Task AddAsync_InvalidName_ThrowsException(string invalidName)
     {
         // Arrange
-        var invalidPublisher = new Publisher { Name = invalidName };
+        var invalidPublisher = new Publisher { PublisherName = invalidName };
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidPublisher));

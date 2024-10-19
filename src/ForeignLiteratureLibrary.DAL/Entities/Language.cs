@@ -2,6 +2,6 @@ namespace ForeignLiteratureLibrary.DAL.Entities;
 
 public class Language
 {
-    public string LanguageCode { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    public int LanguageID { get; set; }
+    public string LanguageName { get; set; } = string.Empty;
 }

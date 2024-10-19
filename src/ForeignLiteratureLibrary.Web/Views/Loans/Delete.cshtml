@@ -1,13 +1,13 @@
-﻿@model BookEditionLoanDto
+﻿@model LoanDto
 
 @{
     ViewBag.Title = "Видалити видачу книги";
 }
 
 <form asp-action="Delete" method="post">
-    <input hidden asp-for="BookEditionLoanID"/>
+    <input hidden asp-for="LoanID"/>
     <input hidden asp-for="BookEditionID"/>
-    <input hidden asp-for="LibraryCardNumber"/>
+    <input hidden asp-for="ReaderID"/>
     <input hidden asp-for="LoanDate"/>
     <input hidden asp-for="DueDate"/>
     <input hidden asp-for="ReturnDate"/>
@@ -16,9 +16,9 @@
 
         <div class="row mb-3">
         <div class="col-md-6">
-            <label asp-for="LibraryCardNumber" class="form-label">Читач</label>
-            <select asp-for="LibraryCardNumber" asp-items="ViewBag.Readers" class="form-select" disabled></select>
-            <span class="text-danger" asp-validation-for="LibraryCardNumber"></span>
+            <label asp-for="ReaderID" class="form-label">Читач</label>
+            <select asp-for="ReaderID" asp-items="ViewBag.Readers" class="form-select" disabled></select>
+            <span class="text-danger" asp-validation-for="ReaderID"></span>
         </div>
         <div class="col-md-6">
             <label asp-for="BookEditionID" class="form-label">Книга</label>

@@ -22,11 +22,11 @@
 
     <div class="row mb-3">
         <div class="col-md-6">
-            <label asp-for="BookEdition.LanguageCode" class="form-label">Мова видання<span class="text-danger">*</span></label>
-            <select asp-for="BookEdition.LanguageCode" class="form-select" asp-items="ViewBag.Languages"
+            <label asp-for="BookEdition.LanguageID" class="form-label">Мова видання<span class="text-danger">*</span></label>
+            <select asp-for="BookEdition.LanguageID" class="form-select" asp-items="ViewBag.Languages"
                     data-val-length-min="1" data-val-length-max="99">
             </select>
-            <span class="text-danger" asp-validation-for="BookEdition.LanguageCode"></span>
+            <span class="text-danger" asp-validation-for="BookEdition.LanguageID"></span>
         </div>
         <div class="col-md-6">
             <label asp-for="BookEdition.PublisherID" class="form-label">Видавництво</label>
@@ -57,15 +57,20 @@
             <span class="text-danger" asp-validation-for="BookEdition.PageCount"></span>
         </div>
         <div class="col-md-6">
+            <label asp-for="BookEdition.EditionPublicationYear" class="form-label">Кількість сторінок<span class="text-danger">*</span></label>
+            <input asp-for="BookEdition.EditionPublicationYear" class="form-control" />
+            <span class="text-danger" asp-validation-for="BookEdition.EditionPublicationYear"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
             <label asp-for="BookEdition.BookID" class="form-label">Книга<span class="text-danger">*</span></label>
             <select asp-for="BookEdition.BookID" class="form-select" asp-items="ViewBag.Books">
             </select>
             <span class="text-danger" asp-validation-for="BookEdition.BookID"></span>
         </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6 offset-md-3">
+        <div class="col-md-6">
             <label class="form-label">Перекладачі</label>
             <select asp-for="Translators" asp-items="ViewBag.Translators" class="form-select" multiple>
             </select>

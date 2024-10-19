@@ -25,8 +25,8 @@ public class BookRepositoryTests : IDisposable
         var newBook = new Book
         {
             OriginalTitle = "Thus Spoke Zarathustra",
-            OriginalLanguageCode = "DE",
-            PublicationYear = 1883,
+            OriginalLanguageID = 1,
+            FirstPublicationYear = 1883,
             Authors =
             [
                 new() { AuthorID = 3 }
@@ -59,8 +59,8 @@ public class BookRepositoryTests : IDisposable
         var invalidBook = new Book
         {
             OriginalTitle = invalidTitle,
-            OriginalLanguageCode = "DE",
-            PublicationYear = 1883,
+            OriginalLanguageID = 1,
+            FirstPublicationYear = 1883,
         };
 
         // Act & Assert
@@ -106,7 +106,7 @@ public class BookRepositoryTests : IDisposable
         // Assert
         book.Should().NotBeNull();
         book!.OriginalTitle.Should().Be("The Catcher in the Rye");
-        book.OriginalLanguage!.LanguageCode.Should().Be("EN");
+        book.OriginalLanguage!.LanguageID.Should().Be(1);
         book.Authors.Should().NotBeEmpty();
         book.Genres.Should().NotBeEmpty();
     }
@@ -147,8 +147,8 @@ public class BookRepositoryTests : IDisposable
     public async Task GetTop10BooksAsync_ReturnsTopBooks()
     {
         // Arrange
-        var startDate = new DateTime(2023, 1, 1);
-        var endDate = new DateTime(2023, 12, 31);
+        var startDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = new DateTime(2023, 12, 31, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var topBooks = await _repository.GetTop10BooksAsync(startDate, endDate);

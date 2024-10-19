@@ -3,15 +3,18 @@ using ForeignLiteratureLibrary.BLL.Dtos;
 using ForeignLiteratureLibrary.BLL.Interfaces;
 using ForeignLiteratureLibrary.DAL.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ForeignLiteratureLibrary.Web.Controllers;
 public class PublishersController : Controller
 {
     private readonly IPublisherService _publisherService;
+    private readonly ICountryService _countryService;
 
-    public PublishersController(IPublisherService publisherService)
+    public PublishersController(IPublisherService publisherService, ICountryService countryService)
     {
         _publisherService = publisherService;
+        _countryService = countryService;
     }
 
     public async Task<IActionResult> Index(int page = 1, int pageSize = PaginationConstants.DefaultPageSize)
@@ -22,8 +25,10 @@ public class PublishersController : Controller
     }
 
     [HttpGet]
-    public IActionResult Add()
+    public async Task<IActionResult> Add()
     {
+        await PopulateViewBagAsync();
+
         return View();
     }
 
@@ -32,10 +37,12 @@ public class PublishersController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateViewBagAsync();
             ViewBag.Errors = ModelState.Values
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage)
                                 .ToList();
+
             return View();
         }
 
@@ -53,6 +60,8 @@ public class PublishersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        await PopulateViewBagAsync();
+
         return View(publisher);
     }
 
@@ -61,6 +70,7 @@ public class PublishersController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateViewBagAsync();
             ViewBag.Errors = ModelState.Values
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage)
@@ -98,5 +108,20 @@ public class PublishersController : Controller
         }
         
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<List<SelectListItem>> GetCountryListItems()
+    {
+        var countries = await _countryService.GetAllCountriesAsync();
+        return countries.Select(c => new SelectListItem
+        {
+            Value = c.CountryID.ToString(),
+            Text = c.Name
+        }).ToList();
+    }
+
+    private async Task PopulateViewBagAsync()
+    {
+        ViewBag.Countries = await GetCountryListItems();
     }
 }

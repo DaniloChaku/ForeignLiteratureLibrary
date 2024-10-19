@@ -32,9 +32,7 @@ public class BooksController : Controller
     [HttpGet]
     public async Task<IActionResult> Add()
     {
-        ViewBag.Languages = await GetLanguageListItems();
-        ViewBag.Authors = await GetAuthorListItems();
-        ViewBag.Genres = await GetGenreListItems();
+        await PopulateViewBagAsync();
 
         return View();
     }
@@ -44,9 +42,7 @@ public class BooksController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Languages = await GetLanguageListItems();
-            ViewBag.Authors = await GetAuthorListItems();
-            ViewBag.Genres = await GetGenreListItems();
+            await PopulateViewBagAsync();
             ViewBag.Errors = ModelState.Values
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage)
@@ -77,9 +73,7 @@ public class BooksController : Controller
             Genres = book.Genres.Select(g => g.GenreID).ToList()
         };
 
-        ViewBag.Languages = await GetLanguageListItems();
-        ViewBag.Authors = await GetAuthorListItems();
-        ViewBag.Genres = await GetGenreListItems();
+        await PopulateViewBagAsync();
 
         return View(bookModel);
     }
@@ -89,9 +83,7 @@ public class BooksController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Languages = await GetLanguageListItems();
-            ViewBag.Authors = await GetAuthorListItems();
-            ViewBag.Genres = await GetGenreListItems();
+            await PopulateViewBagAsync();
             ViewBag.Errors = ModelState.Values
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage)
@@ -141,7 +133,7 @@ public class BooksController : Controller
         return authors.Select(a => new SelectListItem
         {
             Value = a.AuthorID.ToString(),
-            Text = a.FullName
+            Text = a.AuthorFullName
         }).ToList();
     }
 
@@ -160,8 +152,15 @@ public class BooksController : Controller
         var genres = await _languageService.GetAllLanguagesAsync();
         return genres.Select(g => new SelectListItem
         {
-            Value = g.LanguageCode.ToString(),
+            Value = g.LanguageID.ToString(),
             Text = g.Name
         }).ToList();
+    }
+
+    private async Task PopulateViewBagAsync()
+    {
+        ViewBag.Languages = await GetLanguageListItems();
+        ViewBag.Genres = await GetGenreListItems();
+        ViewBag.Authors = await GetAuthorListItems();
     }
 }

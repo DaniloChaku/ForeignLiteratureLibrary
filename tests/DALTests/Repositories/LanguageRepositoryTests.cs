@@ -20,28 +20,28 @@ public class LanguageRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByCodeAsync_ExistingCode_ReturnsLanguage()
+    public async Task GetByIdAsync_ExistingCode_ReturnsLanguage()
     {
         // Arrange
-        const string languageCode = "EN";
+        int languageId = 1;
 
         // Act
-        var result = await _repository.GetByCodeAsync(languageCode);
+        var result = await _repository.GetByIdAsync(languageId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.LanguageCode.Should().Be(languageCode);
-        result.Name.Should().Be("English");
+        result!.LanguageID.Should().Be(languageId);
+        result.LanguageName.Should().Be("English");
     }
 
     [Fact]
-    public async Task GetByCodeAsync_NonExistingCode_ReturnsNull()
+    public async Task GetByIdAsync_NonExistingCode_ReturnsNull()
     {
         // Arrange
-        const string languageCode = "XX";
+        int languageId = 99;
 
         // Act
-        var result = await _repository.GetByCodeAsync(languageCode);
+        var result = await _repository.GetByIdAsync(languageId);
 
         // Assert
         result.Should().BeNull();
@@ -55,10 +55,10 @@ public class LanguageRepositoryTests : IDisposable
 
         // Assert
         results.Should().HaveCount(4);
-        results.Should().Contain(l => l.LanguageCode == "EN" && l.Name == "English");
-        results.Should().Contain(l => l.LanguageCode == "FR" && l.Name == "French");
-        results.Should().Contain(l => l.LanguageCode == "DE" && l.Name == "German");
-        results.Should().Contain(l => l.LanguageCode == "UA" && l.Name == "Ukrainian");
+        results.Should().Contain(l => l.LanguageID == 1 && l.LanguageName == "English");
+        results.Should().Contain(l => l.LanguageID == 2 && l.LanguageName == "French");
+        results.Should().Contain(l => l.LanguageID == 3 && l.LanguageName == "German");
+        results.Should().Contain(l => l.LanguageID == 4 && l.LanguageName == "Ukrainian");
     }
 
     [Fact]
@@ -87,50 +87,51 @@ public class LanguageRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewLanguage()
     {
         // Arrange
-        var newLanguage = new Language { LanguageCode = "ES", Name = "Spanish" };
+        var newLanguage = new Language { LanguageName = "Spanish" };
 
         // Act
         await _repository.AddAsync(newLanguage);
-        var result = await _repository.GetByCodeAsync("ES");
+        var result = await _repository.GetByIdAsync(5);
 
         // Assert
         result.Should().NotBeNull();
-        result!.LanguageCode.Should().Be("ES");
-        result.Name.Should().Be("Spanish");
+        result!.LanguageName.Should().Be("Spanish");
     }
 
     [Fact]
     public async Task UpdateAsync_UpdatesExistingLanguage()
     {
         // Arrange
-        var language = await _repository.GetByCodeAsync("EN");
-        language!.Name = "British English";
+        var id = 1;
+        var language = await _repository.GetByIdAsync(id);
+        language!.LanguageName = "British English";
 
         // Act
         await _repository.UpdateAsync(language);
-        var updatedLanguage = await _repository.GetByCodeAsync("EN");
+        var updatedLanguage = await _repository.GetByIdAsync(id);
 
         // Assert
         updatedLanguage.Should().NotBeNull();
-        updatedLanguage!.Name.Should().Be("British English");
+        updatedLanguage!.LanguageName.Should().Be("British English");
     }
 
     [Fact]
     public async Task DeleteAsync_DeletesExistingLanguage()
     {
         // Act
-        await _repository.DeleteAsync("UA");
-        var deletedLanguage = await _repository.GetByCodeAsync("UA");
+        var id = 4;
+        await _repository.DeleteAsync(id);
+        var deletedLanguage = await _repository.GetByIdAsync(id);
 
         // Assert
         deletedLanguage.Should().BeNull();
     }
 
     [Fact]
-    public async Task AddAsync_DuplicateLanguageCode_ThrowsException()
+    public async Task AddAsync_DuplicateLanguageName_ThrowsException()
     {
         // Arrange
-        var duplicateLanguage = new Language { LanguageCode = "EN", Name = "English (US)" };
+        var duplicateLanguage = new Language { LanguageName = "English" };
 
         // Act & Assert
         await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateLanguage));
@@ -139,10 +140,10 @@ public class LanguageRepositoryTests : IDisposable
     [Theory]
     [InlineData("  ")]
     [InlineData(null)]
-    public async Task AddAsync_InvalidLanguageCode_ThrowsException(string invalidLanguageCode)
+    public async Task AddAsync_InvalidLanguageName_ThrowsException(string invalidLanguageName)
     {
         // Arrange
-        var invalidLanguage = new Language { LanguageCode = invalidLanguageCode, Name = "English (US)" };
+        var invalidLanguage = new Language { LanguageName = invalidLanguageName};
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidLanguage));

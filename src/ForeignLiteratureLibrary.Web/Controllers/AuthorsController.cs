@@ -92,6 +92,8 @@ public class AuthorsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        ViewBag.Countries = await GetCountryListItems();
+
         return View(author);
     }
 
@@ -109,7 +111,7 @@ public class AuthorsController : Controller
         return countries.Select(
             c => new SelectListItem()
             {
-                Value = c.CountryCode,
+                Value = c.CountryID.ToString(),
                 Text = c.Name
             }).ToList();
     }

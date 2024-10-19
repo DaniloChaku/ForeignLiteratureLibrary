@@ -13,9 +13,9 @@ public interface ILanguageService
 
     Task UpdateLanguageAsync(LanguageDto languageDto);
 
-    Task DeleteLanguageAsync(string languageCode);
+    Task DeleteLanguageAsync(int languageId);
 
-    Task<LanguageDto?> GetLanguageByCodeAsync(string languageCode);
+    Task<LanguageDto?> GetLanguageByIdAsync(int languageId);
 
     Task<PaginatedResult<LanguageDto>> GetLanguagesPageAsync(int pageNumber, int pageSize);
 

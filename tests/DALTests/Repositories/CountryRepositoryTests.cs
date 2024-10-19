@@ -23,19 +23,18 @@ public class CountryRepositoryTests : IDisposable
     public async Task GetByCodeAsync_ExistingCode_ReturnsCountry()
     {
         // Act
-        var result = await _repository.GetByCodeAsync("US");
+        var result = await _repository.GetByIdAsync(1);
 
         // Assert
         result.Should().NotBeNull();
-        result!.CountryCode.Should().Be("US");
-        result.Name.Should().Be("United States");
+        result!.CountryName.Should().Be("United States");
     }
 
     [Fact]
     public async Task GetByCodeAsync_NonExistingCode_ReturnsNull()
     {
         // Act
-        var result = await _repository.GetByCodeAsync("XX");
+        var result = await _repository.GetByIdAsync(99);
 
         // Assert
         result.Should().BeNull();
@@ -49,10 +48,10 @@ public class CountryRepositoryTests : IDisposable
 
         // Assert
         results.Should().HaveCount(4);
-        results.Should().Contain(c => c.CountryCode == "US" && c.Name == "United States");
-        results.Should().Contain(c => c.CountryCode == "DE" && c.Name == "Germany");
-        results.Should().Contain(c => c.CountryCode == "FR" && c.Name == "France");
-        results.Should().Contain(c => c.CountryCode == "UA" && c.Name == "Ukraine");
+        results.Should().Contain(c => c.CountryName == "United States");
+        results.Should().Contain(c => c.CountryName == "Germany");
+        results.Should().Contain(c => c.CountryName == "France");
+        results.Should().Contain(c => c.CountryName == "Ukraine");
     }
 
     [Fact]
@@ -81,77 +80,64 @@ public class CountryRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewCountry()
     {
         // Arrange
-        var newCountry = new Country { CountryCode = "PT", Name = "Portugal" };
+        var newCountry = new Country { CountryName = "Portugal" };
 
         // Act
         await _repository.AddAsync(newCountry);
-        var result = await _repository.GetByCodeAsync("PT");
+        var result = await _repository.GetByIdAsync(5);
 
         // Assert
         result.Should().NotBeNull();
-        result!.CountryCode.Should().Be("PT");
-        result.Name.Should().Be("Portugal");
+        result!.CountryName.Should().Be("Portugal");
     }
 
     [Fact]
     public async Task UpdateAsync_UpdatesExistingCountry()
     {
         // Arrange
-        var country = await _repository.GetByCodeAsync("US");
-        country!.Name = "United States of America";
+        var id = 1;
+        var country = await _repository.GetByIdAsync(id);
+        country!.CountryName = "United States of America";
 
         // Act
         await _repository.UpdateAsync(country);
-        var updatedCountry = await _repository.GetByCodeAsync("US");
+        var updatedCountry = await _repository.GetByIdAsync(id);
 
         // Assert
         updatedCountry.Should().NotBeNull();
-        updatedCountry!.Name.Should().Be("United States of America");
+        updatedCountry!.CountryName.Should().Be("United States of America");
     }
 
     [Fact]
     public async Task DeleteAsync_DeletesExistingCountry()
     {
         // Act
-        await _repository.DeleteAsync("UA");
-        var deletedCountry = await _repository.GetByCodeAsync("UA");
+        var id = 4;
+        await _repository.DeleteAsync(id);
+        var deletedCountry = await _repository.GetByIdAsync(id);
 
         // Assert
         deletedCountry.Should().BeNull();
     }
 
     [Fact]
-    public async Task AddAsync_DuplicateCountryCode_ThrowsException()
+    public async Task AddAsync_DuplicateCountryName_ThrowsException()
     {
         // Arrange
-        var duplicateCountry = new Country { CountryCode = "US", Name = "United States (duplicate)" };
+        var duplicateCountry = new Country { CountryName = "Ukraine" };
 
         // Act & Assert
         await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateCountry));
     }
 
     [Fact]
-    public async Task AddAsync_NullCountryCodeOrName_ThrowsException()
+    public async Task AddAsync_NullCountryName_ThrowsException()
     {
         // Arrange
-        var invalidCountryNullCode = new Country { CountryCode = null!, Name = "Invalid" };
-        var invalidCountryNullName = new Country { CountryCode = "ARG", Name = null! };
+        var invalidCountryNullName = new Country { CountryName = null! };
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotNullConstraintViolationException>(() => _repository.AddAsync(invalidCountryNullCode));
         await Assert.ThrowsAsync<NotNullConstraintViolationException>(() => _repository.AddAsync(invalidCountryNullName));
-    }
-
-    [Theory]
-    [InlineData("  ")]
-    [InlineData("U")]
-    public async Task AddAsync_CountryCodeLessThan2CharactersLong_ThrowsException(string invalidCountryCode)
-    {
-        // Arrange
-        var invalidCountry = new Country { CountryCode = invalidCountryCode, Name = "Invalid" };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<CheckConstraintViolationException>(() => _repository.AddAsync(invalidCountry));
     }
 
     protected virtual void Dispose(bool disposing)

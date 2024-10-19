@@ -4,12 +4,12 @@ public class BookEdition
 {
     public int BookEditionID { get; set; }
     public string? ISBN { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string LanguageCode { get; set; } = string.Empty;
+    public string EditionTitle { get; set; } = string.Empty;
     public int PageCount { get; set; }
     public string ShelfLocation { get; set; } = string.Empty;
     public int TotalCopies { get; set; }
-    public int AvailableCopies { get; set; }
+    public int EditionPublicationYear { get; set;}
+    public int LanguageID { get; set; }
     public int BookID { get; set; }
     public int? PublisherID { get; set; }
 
@@ -17,5 +17,7 @@ public class BookEdition
     public Language? Language { get; set; }
     public Publisher? Publisher { get; set; }
     public ICollection<Translator> Translators { get; set; } = [];
-    public ICollection<BookEditionLoan> Loans { get; set; } = [];
+    public ICollection<Loan> Loans { get; set; } = [];
+
+    public int AvailableCopies { get; set; }
 }

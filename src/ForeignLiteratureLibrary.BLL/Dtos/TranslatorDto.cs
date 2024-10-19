@@ -13,6 +13,8 @@ public class TranslatorDto
     [StringLength(100, ErrorMessage = "FullName cannot exceed 100 characters.")]
     public string FullName { get; set; } = string.Empty;
 
+    public int CountryID { get; set; }
+
     public CountryDto? Country { get; set; }
 
     public List<BookEditionDto> BookEditions { get; set; } = [];
@@ -22,7 +24,8 @@ public class TranslatorDto
         return new Translator
         {
             TranslatorID = this.TranslatorID,
-            FullName = this.FullName.Trim(),
+            TranslatorFullName = this.FullName.Trim(),
+            CountryID = this.CountryID,
             BookEditions = this.BookEditions.ConvertAll(be => be.ToEntity())
         };
     }
@@ -35,7 +38,9 @@ public static class TranslatorExtensions
         return new TranslatorDto
         {
             TranslatorID = translator.TranslatorID,
-            FullName = translator.FullName.Trim(),
+            FullName = translator.TranslatorFullName.Trim(),
+            CountryID = translator.CountryID,
+            Country = translator.Country?.ToDto(),
             BookEditions = translator.BookEditions.Select(be => be.ToDto()).ToList()
         };
     }

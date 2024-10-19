@@ -17,15 +17,14 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         try
         {
             const string sql = @"
-                INSERT INTO Translator (FullName)
-                OUTPUT INSERTED.TranslatorID
-                VALUES (@FullName)";
+            INSERT INTO Translator (TranslatorFullName, CountryID)
+            OUTPUT INSERTED.TranslatorID
+            VALUES (@TranslatorFullName, @CountryID)";
 
             using var connection = await CreateConnectionAsync();
-            var translatorId = await connection.ExecuteScalarAsync<int>(sql, translator);
-            translator.TranslatorID = translatorId;
+            translator.TranslatorID = await connection.ExecuteScalarAsync<int>(sql, translator);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_FullName"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_TranslatorFullName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot add the translator because the full name cannot be empty", ex);
@@ -33,7 +32,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
             throw new UniqueConstraintViolationException(
-                $"Cannot add the translator because a record with the same name already exists", ex);
+                "Cannot add the translator because a record with the same name already exists", ex);
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
@@ -47,14 +46,15 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         try
         {
             const string sql = @"
-                UPDATE Translator 
-                SET FullName = @FullName
-                WHERE TranslatorID = @TranslatorId";
+            UPDATE Translator 
+            SET TranslatorFullName = @TranslatorFullName,
+                CountryID = @CountryID
+            WHERE TranslatorID = @TranslatorID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, translator);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_FullName"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Translator_TranslatorFullName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot update the translator because the full name cannot be empty", ex);
@@ -62,7 +62,7 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
             throw new UniqueConstraintViolationException(
-                $"Cannot update the translator because a record with the same name already exists", ex);
+                "Cannot update the translator because a record with the same name already exists", ex);
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
@@ -92,22 +92,24 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<Translator?> GetByIdAsync(int translatorId)
     {
         const string sql = @"
-                SELECT t.TranslatorID, t.FullName, be.*
-                FROM Translator t
-                LEFT JOIN BookEditionTranslator bet ON t.TranslatorID = bet.TranslatorID
-                LEFT JOIN BookEdition be ON bet.BookEditionID = be.BookEditionID
-                WHERE t.TranslatorID = @TranslatorId";
+        SELECT t.TranslatorID, t.TranslatorFullName, t.CountryID, c.CountryID, c.CountryName, be.*
+        FROM Translator t
+        LEFT JOIN Country c ON t.CountryID = c.CountryID
+        LEFT JOIN BookEditionTranslator bet ON t.TranslatorID = bet.TranslatorID
+        LEFT JOIN BookEdition be ON bet.BookEditionID = be.BookEditionID
+        WHERE t.TranslatorID = @TranslatorID";
 
         using var connection = await CreateConnectionAsync();
 
-        Dictionary<int, Translator> translatorMap = [];
-        await connection.QueryAsync<Translator, BookEdition, Translator>(
+        var translatorMap = new Dictionary<int, Translator>();
+        await connection.QueryAsync<Translator, Country, BookEdition, Translator>(
             sql,
-            (translator, bookEdition) =>
+            (translator, country, bookEdition) =>
             {
                 if (!translatorMap.TryGetValue(translator.TranslatorID, out var translatorEntry))
                 {
                     translatorEntry = translator;
+                    translatorEntry.Country = country;
                     translatorEntry.BookEditions = [];
                     translatorMap.Add(translator.TranslatorID, translatorEntry);
                 }
@@ -119,11 +121,12 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
 
                 return translatorEntry;
             },
-            new { TranslatorId = translatorId },
-            splitOn: "BookEditionID");
+            new { TranslatorID = translatorId },
+            splitOn: "CountryID,BookEditionID");
 
         return translatorMap.Values.FirstOrDefault();
     }
+
 
     public async Task<int> GetCountAsync()
     {
@@ -136,15 +139,24 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<List<Translator>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT t.TranslatorID, t.FullName
-                FROM Translator t
-                ORDER BY t.FullName
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+        SELECT t.TranslatorID, t.TranslatorFullName, t.CountryID, c.CountryID, c.CountryName
+        FROM Translator t
+        LEFT JOIN Country c ON t.CountryID = c.CountryID
+        ORDER BY t.TranslatorFullName
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
         var parameters = new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize };
-        var translators = await connection.QueryAsync<Translator>(sql, parameters);
+        var translators = await connection.QueryAsync<Translator, Country, Translator>(
+            sql,
+            (translator, country) =>
+            {
+                translator.Country = country;
+                return translator;
+            },
+            parameters,
+            splitOn: "CountryID");
 
         return translators.ToList();
     }
@@ -152,12 +164,20 @@ public class TranslatorRepository : BaseRepository, ITranslatorRepository
     public async Task<List<Translator>> GetAllAsync()
     {
         const string sql = @"
-                SELECT TranslatorID, FullName
-                FROM Translator
-                ORDER BY FullName";
+        SELECT t.TranslatorID, t.TranslatorFullName, t.CountryID, c.CountryID, c.CountryName
+        FROM Translator t
+        LEFT JOIN Country c ON t.CountryID = c.CountryID
+        ORDER BY t.TranslatorFullName";
 
         using var connection = await CreateConnectionAsync();
-        var translators = await connection.QueryAsync<Translator>(sql);
+        var translators = await connection.QueryAsync<Translator, Country, Translator>(
+            sql,
+            (translator, country) =>
+            {
+                translator.Country = country;
+                return translator;
+            },
+            splitOn: "CountryID");
 
         return translators.ToList();
     }

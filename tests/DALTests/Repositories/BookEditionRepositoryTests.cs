@@ -28,12 +28,13 @@ public class BookEditionRepositoryTests : IDisposable
         var newBookEdition = new BookEdition
         {
             ISBN = "978-3-16-148410-0",
-            Title = "New Book Edition",
-            LanguageCode = "EN",
+            EditionTitle = "New Book Edition",
+            LanguageID = 1,
             PageCount = 350,
             ShelfLocation = "B1-01",
             TotalCopies = 5,
             AvailableCopies = 5,
+            EditionPublicationYear = 2020,
             BookID = 1,
             PublisherID = 1, 
             Translators =
@@ -50,7 +51,7 @@ public class BookEditionRepositoryTests : IDisposable
         newBookEdition.BookEditionID.Should().BeGreaterThan(0);
         var result = await _repository.GetByIdAsync(newBookEdition.BookEditionID);
         result.Should().NotBeNull();
-        result!.Title.Should().Be("New Book Edition");
+        result!.EditionTitle.Should().Be("New Book Edition");
         result.Translators.Should().Contain(t => t.TranslatorID == 1);
         result.Translators.Should().Contain(t => t.TranslatorID == 2);
     }
@@ -62,8 +63,8 @@ public class BookEditionRepositoryTests : IDisposable
         var invalidBookEdition = new BookEdition
         {
             ISBN = "",
-            Title = "Invalid Book Edition",
-            LanguageCode = "EN",
+            EditionTitle = "Invalid Book Edition",
+            LanguageID = 1,
             PageCount = 350,
             ShelfLocation = "B1-01",
             TotalCopies = 5,
@@ -85,7 +86,7 @@ public class BookEditionRepositoryTests : IDisposable
     {
         // Arrange
         var bookEdition = await _repository.GetByIdAsync(1);
-        bookEdition!.Title = "Updated Book Edition";
+        bookEdition!.EditionTitle = "Updated Book Edition";
 
         // Act
         await _repository.UpdateAsync(bookEdition);
@@ -93,7 +94,7 @@ public class BookEditionRepositoryTests : IDisposable
 
         // Assert
         updatedBookEdition.Should().NotBeNull();
-        updatedBookEdition!.Title.Should().Be("Updated Book Edition");
+        updatedBookEdition!.EditionTitle.Should().Be("Updated Book Edition");
     }
 
     [Fact]
@@ -176,11 +177,11 @@ public class BookEditionRepositoryTests : IDisposable
         result!.BookEditionID.Should().Be(1);
         result.ISBN.Should().Be("978-0-14-023750-4");
         result.Book!.OriginalTitle.Should().Be("The Catcher in the Rye");
-        result.Publisher!.Name.Should().Be("Penguin Books");
-        result.Language!.Name.Should().Be("English");
+        result.Publisher!.PublisherName.Should().Be("Penguin Books");
+        result.Language!.LanguageName.Should().Be("English");
         result.Translators.Should().BeEmpty(); 
-        result.Book.Authors.Should().ContainSingle(a => a.FullName == "J.D. Salinger");
-        result.Book.Genres.Should().ContainSingle(g => g.Name == "Fiction");
+        result.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "J.D. Salinger");
+        result.Book.Genres.Should().ContainSingle(g => g.GenreName == "Fiction");
     }
 
     [Fact]
@@ -201,24 +202,24 @@ public class BookEditionRepositoryTests : IDisposable
     public async Task GetByIsbnAsync_ExistingIsbn_ReturnsCorrectBookEdition()
     {
         // Act
-        var result = await _repository.GetByIsbnAsync("978-0-14-023750-4"); 
+        var result = (await _repository.GetPageByIsbnAsync("978-0-14-023750-4", 1, 1)).FirstOrDefault();
 
         // Assert
         result.Should().NotBeNull();
         result!.ISBN.Should().Be("978-0-14-023750-4");
         result.Book!.OriginalTitle.Should().Be("The Catcher in the Rye");
-        result.Publisher!.Name.Should().Be("Penguin Books");
-        result.Language!.Name.Should().Be("English");
+        result.Publisher!.PublisherName.Should().Be("Penguin Books");
+        result.Language!.LanguageName.Should().Be("English");
         result.Translators.Should().BeEmpty(); 
-        result.Book.Authors.Should().ContainSingle(a => a.FullName == "J.D. Salinger");
-        result.Book.Genres.Should().ContainSingle(g => g.Name == "Fiction");
+        result.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "J.D. Salinger");
+        result.Book.Genres.Should().ContainSingle(g => g.GenreName == "Fiction");
     }
 
     [Fact]
     public async Task GetByIsbnAsync_NonExistingIsbn_ReturnsNull()
     {
         // Act
-        var result = await _repository.GetByIsbnAsync("978-0-000000000-0");
+        var result = (await _repository.GetPageByIsbnAsync("978-0-000000000-0", 1, 1)).FirstOrDefault();
 
         // Assert
         result.Should().BeNull();
@@ -239,22 +240,22 @@ public class BookEditionRepositoryTests : IDisposable
         result.Count.Should().Be(2); 
 
         var edition1 = result[0];
-        edition1.Title.Should().Be("Faust");
+        edition1.EditionTitle.Should().Be("Faust");
         edition1.ISBN.Should().Be("978-0-521-31009-0");
         edition1.Book!.OriginalTitle.Should().Be("Faust");
-        edition1.Publisher!.Name.Should().Be("HarperCollins");
-        edition1.Translators.Should().ContainSingle(t => t.FullName == "Philip Wayne");
-        edition1.Book.Authors.Should().ContainSingle(a => a.FullName == "Johann Wolfgang von Goethe");
-        edition1.Book.Genres.Should().ContainSingle(g => g.Name == "Philosophy");
+        edition1.Publisher!.PublisherName.Should().Be("HarperCollins");
+        edition1.Translators.Should().ContainSingle(t => t.TranslatorFullName == "Philip Wayne");
+        edition1.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "Johann Wolfgang von Goethe");
+        edition1.Book.Genres.Should().ContainSingle(g => g.GenreName == "Philosophy");
 
         var edition2 = result[1];
         edition2.ISBN.Should().Be("978-0-521-31009-2");
-        edition2.Title.Should().Be("Faust");
+        edition2.EditionTitle.Should().Be("Faust");
         edition2.Book!.OriginalTitle.Should().Be("Faust");
-        edition2.Publisher!.Name.Should().Be("HarperCollins");
+        edition2.Publisher!.PublisherName.Should().Be("HarperCollins");
         edition2.Translators.Should().BeEmpty();
-        edition2.Book.Authors.Should().ContainSingle(a => a.FullName == "Johann Wolfgang von Goethe");
-        edition2.Book.Genres.Should().ContainSingle(g => g.Name == "Philosophy");
+        edition2.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "Johann Wolfgang von Goethe");
+        edition2.Book.Genres.Should().ContainSingle(g => g.GenreName == "Philosophy");
     }
 
     [Fact]
@@ -276,7 +277,7 @@ public class BookEditionRepositoryTests : IDisposable
     public async Task GetPageByGenreAsync_ValidGenre_ReturnsCorrectBookEditions()
     {
         // Act
-        var result = await _repository.GetPageByGenreAsync(1); 
+        var result = await _repository.GetPageByGenreAsync(1, 1, 2); 
 
         // Assert
         result.Should().NotBeNull();
@@ -285,15 +286,15 @@ public class BookEditionRepositoryTests : IDisposable
         var edition = result[0];
         edition.BookEditionID.Should().Be(1);
         edition.Book!.OriginalTitle.Should().Be("The Catcher in the Rye");
-        edition.Book.Authors.Should().ContainSingle(a => a.FullName == "J.D. Salinger");
-        result[0].Book!.Genres.Should().Contain(g => g.GenreID == 1 && g.Name == "Fiction");
+        edition.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "J.D. Salinger");
+        result[0].Book!.Genres.Should().Contain(g => g.GenreID == 1 && g.GenreName == "Fiction");
     }
 
     [Fact]
     public async Task GetPageByGenreAsync_InvalidGenre_ReturnsEmptyList()
     {
         // Act
-        var result = await _repository.GetPageByGenreAsync(999); 
+        var result = await _repository.GetPageByGenreAsync(999, 1, 2); 
 
         // Assert
         result.Should().NotBeNull();
@@ -308,7 +309,7 @@ public class BookEditionRepositoryTests : IDisposable
     public async Task GetPageByLanguageAsync_ValidLanguageCode_ReturnsCorrectBookEditions()
     {
         // Act
-        var result = await _repository.GetPageByLanguageAsync("EN");
+        var result = await _repository.GetPageByLanguageAsync(1, 1, 2);
 
         // Assert
         result.Should().NotBeNull();
@@ -317,15 +318,15 @@ public class BookEditionRepositoryTests : IDisposable
         var edition = result[0];
         edition.BookEditionID.Should().Be(1);
         edition.Book!.OriginalTitle.Should().Be("The Catcher in the Rye");
-        edition.Book.Authors.Should().ContainSingle(a => a.FullName == "J.D. Salinger");
-        result[0].LanguageCode.Should().Be("EN");
+        edition.Book.Authors.Should().ContainSingle(a => a.AuthorFullName == "J.D. Salinger");
+        result[0].Language.LanguageName.Should().Be("English");
     }
 
     [Fact]
     public async Task GetPageByLanguageAsync_InvalidLanguageCode_ReturnsEmptyList()
     {
         // Act
-        var result = await _repository.GetPageByLanguageAsync("ZZ");
+        var result = await _repository.GetPageByLanguageAsync(999, 1, 2);
 
         // Assert
         result.Should().NotBeNull();
@@ -340,18 +341,18 @@ public class BookEditionRepositoryTests : IDisposable
     public async Task GetPageByTitleAsync_ValidTitle_ReturnsCorrectBookEditions()
     {
         // Act
-        var result = await _repository.GetPageByTitleAsync("Faust");
+        var result = await _repository.GetPageByTitleAsync("Faust", 1, 2);
 
         // Assert
         result.Count.Should().Be(2);
-        result.TrueForAll(e => e.Title == "Faust");
+        result.TrueForAll(e => e.EditionTitle == "Faust");
     }
 
     [Fact]
     public async Task GetPageByTitleAsync_NonExistingTitle_ReturnsEmptyList()
     {
         // Act
-        var result = await _repository.GetPageByTitleAsync("NonExistingTitle");
+        var result = await _repository.GetPageByTitleAsync("NonExistingTitle", 1, 2);
 
         // Assert
         result.Should().NotBeNull();

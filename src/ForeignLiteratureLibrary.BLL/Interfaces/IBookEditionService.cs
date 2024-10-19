@@ -17,15 +17,15 @@ public interface IBookEditionService
 
     Task<BookEditionDto?> GetBookEditionByIdAsync(int bookEditionId);
 
-    Task<BookEditionDto?> GetBookEditionByIsbnAsync(string isbn);
-
     Task<List<BookEditionDto>> GetAllBookEditionsAsync();
 
     Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageAsync(int pageNumber, int pageSize);
 
-    Task<List<BookEditionDto>> GetBookEditionsByGenreAsync(int genreId);
+    Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByGenreAsync(int genreId, int pageNumber, int pageSize);
 
-    Task<List<BookEditionDto>> GetBookEditionsByLanguageAsync(string languageCode);
+    Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByLanguageAsync(int languageId, int pageNumber, int pageSize);
 
-    Task<List<BookEditionDto>> GetBookEditionsByTitleAsync(string title);
+    Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByTitleAsync(string title, int pageNumber, int pageSize);
+
+    Task<PaginatedResult<BookEditionDto>> GetBookEditionsPageByIsbnAsync(string isbn, int pageNumber, int pageSize);
 }

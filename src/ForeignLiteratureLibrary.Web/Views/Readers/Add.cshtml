@@ -33,19 +33,6 @@
     </div>
 
     <div class="row mb-3">
-        <div class="col-md-6 mb-2">
-            <label asp-for="DateOfBirth" class="form-label">Дата народження</label>
-            <input asp-for="DateOfBirth" class="form-control" />
-            <span class="text-danger" asp-validation-for="DateOfBirth"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="RegistrationDate" class="form-label">Дата реєстрації</label>
-            <input asp-for="RegistrationDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-            <span class="text-danger" asp-validation-for="RegistrationDate"></span>
-        </div>
-    </div>
-
-    <div class="row mb-3">
         <div class="col-6 col-lg-2 col-md-3 offset-lg-4 offset-md-3">
             <button type="submit" class="btn btn-primary form-control">Додати</button>
         </div>

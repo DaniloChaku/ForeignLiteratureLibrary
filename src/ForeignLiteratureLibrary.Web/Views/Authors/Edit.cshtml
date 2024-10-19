@@ -6,19 +6,34 @@
 
 <form asp-action="Edit" method="post">
     <input hidden asp-for="AuthorID" />
+
     <h2 class="text-center mb-3">Редагувати</h2>
+
     <div class="row mb-3">
         <div class="col-md-6">
-            <label asp-for="FullName" class="form-label">ПІБ<span class="text-danger">*</span></label>
-            <input asp-for="FullName" class="form-control" />
-            <span class="text-danger" asp-validation-for="FullName"></span>
+            <label asp-for="AuthorFullName" class="form-label">ПІБ<span class="text-danger">*</span></label>
+            <input asp-for="AuthorFullName" class="form-control" />
+            <span class="text-danger" asp-validation-for="AuthorFullName"></span>
         </div>
         <div class="col-md-6">
-            <label asp-for="CountryCode" class="form-label">Країна<span class="text-danger">*</span></label>
-            <select asp-for="CountryCode" asp-items="ViewBag.Countries" class="form-select" data-val-length-max="100" data-val-length-min="1">
+            <label asp-for="CountryID" class="form-label">Країна<span class="text-danger">*</span></label>
+            <select asp-for="CountryID" asp-items="ViewBag.Countries" class="form-select" data-val-length-max="100" data-val-length-min="1">
                 <option value="">Select a country</option>
             </select>
-            <span class="text-danger" asp-validation-for="CountryCode"></span>
+            <span class="text-danger" asp-validation-for="CountryID"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="BirthYear" class="form-label">Рік народження</label>
+            <input asp-for="BirthYear" class="form-control" />
+            <span class="text-danger" asp-validation-for="BirthYear"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="DeathYear" class="form-label">Рік смерті</label>
+            <input asp-for="DeathYear" class="form-control" />
+            <span class="text-danger" asp-validation-for="DeathYear"></span>
         </div>
     </div>
 
@@ -47,7 +62,7 @@
         <thead>
             <tr>
                 <th scope="col">Назва</th>
-                <th scope="col">Мова</th>
+                <th scope="col">Опис</th>
                 <th scope="col">Рік публікації</th>
             </tr>
         </thead>
@@ -56,7 +71,7 @@
             {
                 <tr>
                     <td>@book.OriginalTitle</td>
-                    <td>@book.OriginalLanguageCode</td>
+                    <td>@book.BookDescription</td>
                     <td>@book.PublicationYear</td>
                 </tr>
             }

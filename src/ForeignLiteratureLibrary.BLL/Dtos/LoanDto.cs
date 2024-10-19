@@ -6,15 +6,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ForeignLiteratureLibrary.BLL.Dtos;
 
-public class BookEditionLoanDto
+public class LoanDto
 {
-    public int BookEditionLoanID { get; set; }
+    public int LoanID { get; set; }
 
     public int BookEditionID { get; set; }
 
-    [Required]
-    [StringLength(20, ErrorMessage = "LibraryCardNumber cannot exceed 20 characters.")]
-    public string LibraryCardNumber { get; set; } = string.Empty;
+    public int ReaderID { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
@@ -34,13 +32,13 @@ public class BookEditionLoanDto
 
     public ReaderDto? Reader { get; set; }
 
-    public BookEditionLoan ToEntity()
+    public Loan ToEntity()
     {
-        return new BookEditionLoan
+        return new Loan
         {
-            BookEditionLoanID = this.BookEditionLoanID,
+            LoanID = this.LoanID,
             BookEditionID = this.BookEditionID,
-            LibraryCardNumber = this.LibraryCardNumber.Trim(),
+            ReaderID = this.ReaderID,
             LoanDate = this.LoanDate,
             DueDate = this.DueDate,
             ReturnDate = this.ReturnDate,
@@ -52,13 +50,13 @@ public class BookEditionLoanDto
 
 public static class BookEditionLoanExtensions
 {
-    public static BookEditionLoanDto ToDto(this BookEditionLoan loan)
+    public static LoanDto ToDto(this Loan loan)
     {
-        return new BookEditionLoanDto
+        return new LoanDto
         {
-            BookEditionLoanID = loan.BookEditionLoanID,
+            LoanID = loan.LoanID,
             BookEditionID = loan.BookEditionID,
-            LibraryCardNumber = loan.LibraryCardNumber.Trim(),
+            ReaderID = loan.ReaderID,
             LoanDate = loan.LoanDate,
             DueDate = loan.DueDate,
             ReturnDate = loan.ReturnDate,

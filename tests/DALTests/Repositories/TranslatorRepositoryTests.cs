@@ -27,7 +27,8 @@ public class TranslatorRepositoryTests : IDisposable
         // Assert
         translator.Should().NotBeNull();
         translator!.TranslatorID.Should().Be(1);
-        translator.FullName.Should().Be("Charles Wilbour");
+        translator.TranslatorFullName.Should().Be("Charles Wilbour");
+        translator.Country!.CountryName.Should().Be("United States");
         translator.BookEditions.Should().HaveCount(1);
         translator.BookEditions.First().BookEditionID.Should().Be(2);
     }
@@ -48,7 +49,8 @@ public class TranslatorRepositoryTests : IDisposable
         // Arrange
         var newTranslator = new Translator
         {
-            FullName = "John Doe"
+            TranslatorFullName = "John Doe",
+            CountryID = 1
         };
 
         // Act
@@ -58,7 +60,7 @@ public class TranslatorRepositoryTests : IDisposable
         newTranslator.TranslatorID.Should().BeGreaterThan(0);
         var addedTranslator = await _repository.GetByIdAsync(newTranslator.TranslatorID);
         addedTranslator.Should().NotBeNull();
-        addedTranslator!.FullName.Should().Be("John Doe");
+        addedTranslator!.TranslatorFullName.Should().Be("John Doe");
     }
 
     [Fact]
@@ -66,7 +68,7 @@ public class TranslatorRepositoryTests : IDisposable
     {
         // Arrange
         var translator = await _repository.GetByIdAsync(2);
-        translator!.FullName = "Philip Wayne Updated";
+        translator!.TranslatorFullName = "Philip Wayne Updated";
 
         // Act
         await _repository.UpdateAsync(translator);
@@ -74,7 +76,7 @@ public class TranslatorRepositoryTests : IDisposable
         // Assert
         var updatedTranslator = await _repository.GetByIdAsync(2);
         updatedTranslator.Should().NotBeNull();
-        updatedTranslator!.FullName.Should().Be("Philip Wayne Updated");
+        updatedTranslator!.TranslatorFullName.Should().Be("Philip Wayne Updated");
     }
 
     [Fact]
@@ -116,7 +118,7 @@ public class TranslatorRepositoryTests : IDisposable
     public async Task AddAsync_InvalidName_ThrowsException(string invalidName)
     {
         // Arrange
-        var invalidTranslator = new Translator { FullName = invalidName };
+        var invalidTranslator = new Translator { TranslatorFullName = invalidName };
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidTranslator));
@@ -130,9 +132,9 @@ public class TranslatorRepositoryTests : IDisposable
 
         // Assert
         translators.Should().HaveCount(3);
-        translators.Should().Contain(t => t.FullName == "Charles Wilbour");
-        translators.Should().Contain(t => t.FullName == "Philip Wayne");
-        translators.Should().Contain(t => t.FullName == "Charles Baudelaire");
+        translators.Should().Contain(t => t.TranslatorFullName == "Charles Wilbour");
+        translators.Should().Contain(t => t.TranslatorFullName == "Philip Wayne");
+        translators.Should().Contain(t => t.TranslatorFullName == "Charles Baudelaire");
     }
 
     protected virtual void Dispose(bool disposing)

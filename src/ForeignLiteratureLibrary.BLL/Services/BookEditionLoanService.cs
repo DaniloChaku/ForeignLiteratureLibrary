@@ -11,20 +11,20 @@ namespace ForeignLiteratureLibrary.BLL.Services;
 
 public class BookEditionLoanService : IBookEditionLoanService
 {
-    private readonly IBookEditionLoanRepository _bookEditionLoanRepository;
+    private readonly ILoanRepository _bookEditionLoanRepository;
 
-    public BookEditionLoanService(IBookEditionLoanRepository bookEditionLoanRepository)
+    public BookEditionLoanService(ILoanRepository bookEditionLoanRepository)
     {
         _bookEditionLoanRepository = bookEditionLoanRepository;
     }
 
-    public async Task AddLoanAsync(BookEditionLoanDto loanDto)
+    public async Task AddLoanAsync(LoanDto loanDto)
     {
         var loan = loanDto.ToEntity();
         await _bookEditionLoanRepository.AddAsync(loan);
     }
 
-    public async Task UpdateLoanAsync(BookEditionLoanDto loanDto)
+    public async Task UpdateLoanAsync(LoanDto loanDto)
     {
         var loan = loanDto.ToEntity();
         await _bookEditionLoanRepository.UpdateAsync(loan);
@@ -35,18 +35,18 @@ public class BookEditionLoanService : IBookEditionLoanService
         await _bookEditionLoanRepository.DeleteAsync(loanId);
     }
 
-    public async Task<BookEditionLoanDto?> GetLoanByIdAsync(int loanId)
+    public async Task<LoanDto?> GetLoanByIdAsync(int loanId)
     {
         var loan = await _bookEditionLoanRepository.GetByIdAsync(loanId);
         return loan?.ToDto();
     }
 
-    public async Task<PaginatedResult<BookEditionLoanDto>> GetLoansPageAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedResult<LoanDto>> GetLoansPageAsync(int pageNumber, int pageSize)
     {
         var loans = await _bookEditionLoanRepository.GetPageAsync(pageNumber, pageSize);
         var totalItems = await _bookEditionLoanRepository.GetCountAsync();
 
-        return new PaginatedResult<BookEditionLoanDto>
+        return new PaginatedResult<LoanDto>
         {
             Items = loans.ConvertAll(loan => loan.ToDto()),
             Page = pageNumber,
@@ -55,12 +55,12 @@ public class BookEditionLoanService : IBookEditionLoanService
         };
     }
 
-    public async Task<PaginatedResult<BookEditionLoanDto>> GetOverdueLoansPageAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedResult<LoanDto>> GetOverdueLoansPageAsync(int pageNumber, int pageSize)
     {
         var overdueLoans = await _bookEditionLoanRepository.GetOverduePageAsync(pageNumber, pageSize);
         var totalItems = await _bookEditionLoanRepository.GetCountAsync();  
 
-        return new PaginatedResult<BookEditionLoanDto>
+        return new PaginatedResult<LoanDto>
         {
             Items = overdueLoans.ConvertAll(loan => loan.ToDto()),
             Page = pageNumber,

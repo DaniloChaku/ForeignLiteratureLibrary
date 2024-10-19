@@ -2,12 +2,11 @@ namespace ForeignLiteratureLibrary.DAL.Entities;
 
 public class Reader
 {
+    public int ReaderID { get; set; }
     public string LibraryCardNumber { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public DateTime DateOfBirth { get; set; }
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
-    public DateTime RegistrationDate { get; set; }
+    public string ReaderFullName { get; set; } = string.Empty;
+    public string? EmailAddress { get; set; }
+    public string? PhoneNumber { get; set; }
 
-    public ICollection<BookEditionLoan> Loans { get; set; } = [];
+    public ICollection<Loan> Loans { get; set; } = [];
 }

@@ -5,9 +5,7 @@ namespace ForeignLiteratureLibrary.BLL.Dtos;
 
 public class CountryDto
 {
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "CountryCode must be between 2 and 3 characters long.")]
-    public string CountryCode { get; set; } = string.Empty;
+    public int CountryID { get; set; }
 
     [Required]
     [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
@@ -17,8 +15,8 @@ public class CountryDto
     {
         return new Country
         {
-            CountryCode = this.CountryCode.Trim().ToUpper(),
-            Name = this.Name.Trim()
+            CountryID = this.CountryID,
+            CountryName = this.Name.Trim()
         };
     }
 }
@@ -29,8 +27,8 @@ public static class CountryExtensions
     {
         return new CountryDto
         {
-            CountryCode = country.CountryCode.Trim(),
-            Name = country.Name.Trim()
+            CountryID = country.CountryID,
+            Name = country.CountryName.Trim()
         };
     }
 }

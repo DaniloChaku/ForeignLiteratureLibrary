@@ -30,14 +30,14 @@ public class ReaderService : IReaderService
         await _readerRepository.UpdateAsync(reader);
     }
 
-    public async Task DeleteReaderAsync(string libraryCardNumber)
+    public async Task DeleteReaderAsync(int readerId)
     {
-        await _readerRepository.DeleteAsync(libraryCardNumber);
+        await _readerRepository.DeleteAsync(readerId);
     }
 
-    public async Task<ReaderDto?> GetReaderByLibraryCardNumberAsync(string libraryCardNumber)
+    public async Task<ReaderDto?> GetReaderByIdAsync(int readerId)
     {
-        var reader = await _readerRepository.GetByLibraryCardNumberAsync(libraryCardNumber);
+        var reader = await _readerRepository.GetByIdAsync(readerId);
         return reader?.ToDto();
     }
 
@@ -65,5 +65,11 @@ public class ReaderService : IReaderService
     {
         var readers = await _readerRepository.GetAllAsync();
         return readers.ConvertAll(r => r.ToDto());
+    }
+
+    public async Task<List<ReaderDto>> GetReadersByLibraryCardNumberAsync(string libraryCardNumber)
+    {
+        var reader = await _readerRepository.GetByLibraryCardNumberAsync(libraryCardNumber);
+        return reader.ConvertAll(r => r.ToDto());
     }
 }

@@ -45,7 +45,7 @@ public class CountriesController : Controller
         }
         catch (UniqueConstraintViolationException)
         {
-            ViewBag.Errors = new List<string>() { "Вже інує країна з таким кодом або назвою." };
+            ViewBag.Errors = new List<string>() { "Вже інує країна з такою назвою." };
             return View();
         }
         
@@ -53,9 +53,9 @@ public class CountriesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(string id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var country = await _countryService.GetCountryByCodeAsync(id);
+        var country = await _countryService.GetCountryByIdAsync(id);
 
         if (country == null)
         {
@@ -91,9 +91,9 @@ public class CountriesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var country = await _countryService.GetCountryByCodeAsync(id);
+        var country = await _countryService.GetCountryByIdAsync(id);
 
         if (country == null)
         {
@@ -108,11 +108,11 @@ public class CountriesController : Controller
     {
         try
         {
-            await _countryService.DeleteCountryAsync(countryDto.CountryCode);
+            await _countryService.DeleteCountryAsync(countryDto.CountryID);
         }
         catch (ForeignKeyViolationException)
         {
-            ViewBag.Errors = new List<string>() { "Видалення неможливо. Є автори, що пов'язані з цією країною." };
+            ViewBag.Errors = new List<string>() { "Видалення неможливо. Є автори, перекладачі або видавництва, пов'язані з цією країною." };
             return View(countryDto);
         }
         

@@ -28,9 +28,9 @@ public class AuthorRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.AuthorID.Should().Be(1);
-        result.FullName.Should().Be("J.D. Salinger");
-        result.CountryCode.Should().Be("US");
+        result.AuthorFullName.Should().Be("J.D. Salinger");
         result.Country.Should().NotBeNull();
+        result.Country!.CountryName.Should().NotBeNull("United States");
         result.Books.Should().NotBeEmpty();
         result.Books.Should().Contain(b => b.OriginalTitle == "The Catcher in the Rye");
     }
@@ -72,7 +72,13 @@ public class AuthorRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewAuthor()
     {
         // Arrange
-        var newAuthor = new Author { FullName = "Friedrich Nietzsche", CountryCode = "DE" };
+        var newAuthor = new Author 
+        { 
+            AuthorFullName = "Friedrich Nietzsche", 
+            CountryID = 1,
+            BirthYear = 1991,
+            DeathYear = 2004
+        };
 
         // Act
         await _repository.AddAsync(newAuthor);
@@ -81,31 +87,33 @@ public class AuthorRepositoryTests : IDisposable
         newAuthor.AuthorID.Should().BeGreaterThan(0);
         var result = await _repository.GetByIdAsync(newAuthor.AuthorID);
         result.Should().NotBeNull();
-        result!.FullName.Should().Be("Friedrich Nietzsche");
+        result!.AuthorFullName.Should().Be("Friedrich Nietzsche");
     }
 
     [Fact]
     public async Task UpdateAsync_UpdatesExistingAuthor()
     {
         // Arrange
-        var author = await _repository.GetByIdAsync(1);
-        author!.FullName = "Jerome David Salinger";
+        var id = 1;
+        var author = await _repository.GetByIdAsync(id);
+        author!.AuthorFullName = "Jerome David Salinger";
 
         // Act
         await _repository.UpdateAsync(author);
-        var updatedAuthor = await _repository.GetByIdAsync(1);
+        var updatedAuthor = await _repository.GetByIdAsync(id);
 
         // Assert
         updatedAuthor.Should().NotBeNull();
-        updatedAuthor!.FullName.Should().Be("Jerome David Salinger");
+        updatedAuthor!.AuthorFullName.Should().Be("Jerome David Salinger");
     }
 
     [Fact]
     public async Task DeleteAsync_DeletesAuthorWithoutBooks()
     {
         // Act
-        await _repository.DeleteAsync(4);
-        var deletedAuthor = await _repository.GetByIdAsync(4);
+        var id = 4;
+        await _repository.DeleteAsync(id);
+        var deletedAuthor = await _repository.GetByIdAsync(id);
 
         // Assert
         deletedAuthor.Should().BeNull();
@@ -115,8 +123,8 @@ public class AuthorRepositoryTests : IDisposable
     public async Task GetTop10AuthorsAsync_ShouldReturnTopAuthors()
     {
         // Arrange
-        var startDate = new DateTime(2023, 1, 1);
-        var endDate = new DateTime(2023, 12, 31);
+        var startDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = new DateTime(2023, 12, 31, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
         var topAuthors = await _repository.GetTop10AuthorsAsync(startDate, endDate);
@@ -125,8 +133,8 @@ public class AuthorRepositoryTests : IDisposable
         topAuthors.Should().NotBeNull();
         topAuthors.Should().HaveCount(2);
 
-        topAuthors.Should().ContainSingle(x => x.FullName == "J.D. Salinger").Which.LoanCount.Should().Be(1);
-        topAuthors.Should().ContainSingle(x => x.FullName == "Victor Hugo").Which.LoanCount.Should().Be(1);
+        topAuthors.Should().ContainSingle(x => x.AuthorFullName == "J.D. Salinger").Which.LoanCount.Should().Be(1);
+        topAuthors.Should().ContainSingle(x => x.AuthorFullName == "Victor Hugo").Which.LoanCount.Should().Be(1);
     }
 
     [Theory]
@@ -135,17 +143,17 @@ public class AuthorRepositoryTests : IDisposable
     public async Task AddAsync_InvalidFullName_ThrowsSqlException(string invalidName)
     {
         // Arrange
-        var invalidAuthor = new Author { FullName = invalidName, CountryCode = "US" };
+        var invalidAuthor = new Author { AuthorFullName = invalidName, CountryID = 1 };
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidAuthor));
     }
 
     [Fact]
-    public async Task AddAsync_NonExistentCountryCode_ThrowsSqlException()
+    public async Task AddAsync_NonExistentCountryID_ThrowsForeignKeyViolationException()
     {
         // Arrange
-        var authorWithInvalidCountry = new Author { FullName = "Test Author", CountryCode = "XX" };
+        var authorWithInvalidCountry = new Author { AuthorFullName = "Test Author", CountryID = 99 };
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<ForeignKeyViolationException>(() => _repository.AddAsync(authorWithInvalidCountry));
@@ -159,10 +167,10 @@ public class AuthorRepositoryTests : IDisposable
 
         // Assert
         authors.Should().HaveCount(4);
-        authors.Should().Contain(a => a.FullName == "J.D. Salinger" && a.CountryCode == "US");
-        authors.Should().Contain(a => a.FullName == "Victor Hugo" && a.CountryCode == "FR");
-        authors.Should().Contain(a => a.FullName == "Johann Wolfgang von Goethe" && a.CountryCode == "DE");
-        authors.Should().Contain(a => a.FullName == "Klaus Mann" && a.CountryCode == "DE");
+        authors.Should().Contain(a => a.AuthorFullName == "J.D. Salinger" && a.CountryID == 1);
+        authors.Should().Contain(a => a.AuthorFullName == "Victor Hugo" && a.CountryID == 2);
+        authors.Should().Contain(a => a.AuthorFullName == "Johann Wolfgang von Goethe" && a.CountryID == 3);
+        authors.Should().Contain(a => a.AuthorFullName == "Klaus Mann" && a.CountryID == 3);
     }
 
     protected virtual void Dispose(bool disposing)

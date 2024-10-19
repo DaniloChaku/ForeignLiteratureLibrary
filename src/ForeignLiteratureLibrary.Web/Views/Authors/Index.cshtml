@@ -13,18 +13,22 @@
             <tr>
                 <th scope="col">ПІБ</th>
                 <th scope="col">Країна</th>
+                <th scope="col">Рік народження</th>
+                <th scope="col">Рік смерті</th>
                 <th scope="col">Дії</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var genre in Model.Items)
+            @foreach (var author in Model.Items)
             {
                 <tr>
-                    <td>@genre.FullName</td>
-                    <td>@genre.CountryCode</td>
+                    <td>@author.AuthorFullName</td>
+                    <td>@author.Country?.Name</td>
+                    <td>@author.BirthYear</td>
+                    <td>@author.DeathYear</td>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@genre.AuthorID">Видалити</a>
-                        <a asp-action="Edit" asp-route-id="@genre.AuthorID">Редагувати</a>
+                        <a asp-action="Delete" asp-route-id="@author.AuthorID">Видалити</a>
+                        <a asp-action="Edit" asp-route-id="@author.AuthorID">Редагувати</a>
                     </td>
                 </tr>
             }

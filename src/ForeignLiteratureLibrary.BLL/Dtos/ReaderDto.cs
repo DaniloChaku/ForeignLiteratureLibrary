@@ -8,6 +8,8 @@ namespace ForeignLiteratureLibrary.BLL.Dtos;
 
 public class ReaderDto
 {
+    public int ReaderID { get; set; }
+
     [Required]
     [StringLength(20, ErrorMessage = "LibraryCardNumber cannot exceed 20 characters.")]
     public string LibraryCardNumber { get; set; } = string.Empty;
@@ -16,11 +18,6 @@ public class ReaderDto
     [StringLength(100, ErrorMessage = "FullName cannot exceed 100 characters.")]
     public string FullName { get; set; } = string.Empty;
 
-    [Required]
-    [DataType(DataType.Date)]
-    [DateBetween1900AndNow(ErrorMessage = "DateOfBirth must be between 1900-01-01 and today.")]
-    public DateTime DateOfBirth { get; set; }
-
     [StringLength(255)]
     [EmailAddress(ErrorMessage = "Email is not valid.")]
     public string? Email { get; set; }
@@ -28,23 +25,17 @@ public class ReaderDto
     [StringLength(20)]
     public string? Phone { get; set; }
 
-    [Required]
-    [DataType(DataType.Date)]
-    [DateBetween1900AndNow(ErrorMessage = "RegistrationDate must be between 1900-01-01 and today.")]
-    public DateTime RegistrationDate { get; set; }
-
-    public List<BookEditionLoanDto> Loans { get; set; } =[];
+    public List<LoanDto> Loans { get; set; } =[];
 
     public Reader ToEntity()
     {
         return new Reader
         {
+            ReaderID = ReaderID,
             LibraryCardNumber = this.LibraryCardNumber.Trim(),
-            FullName = this.FullName.Trim(),
-            DateOfBirth = this.DateOfBirth,
-            Email = this.Email?.Trim(),
-            Phone = this.Phone?.Trim(),
-            RegistrationDate = this.RegistrationDate.ToUniversalTime(),
+            ReaderFullName = this.FullName.Trim(),
+            EmailAddress = this.Email?.Trim(),
+            PhoneNumber = this.Phone?.Trim(),
             Loans = this.Loans.ConvertAll(l => l.ToEntity())
         };
     }
@@ -56,12 +47,11 @@ public static class ReaderExtensions
     {
         return new ReaderDto
         {
+            ReaderID = reader.ReaderID,
             LibraryCardNumber = reader.LibraryCardNumber.Trim(),
-            FullName = reader.FullName.Trim(),
-            DateOfBirth = reader.DateOfBirth,
-            Email = reader.Email?.Trim(),
-            Phone = reader.Phone?.Trim(),
-            RegistrationDate = reader.RegistrationDate.ToLocalTime(),
+            FullName = reader.ReaderFullName.Trim(),
+            Email = reader.EmailAddress?.Trim(),
+            Phone = reader.PhoneNumber?.Trim(),
             Loans = reader.Loans.Select(l => l.ToDto()).ToList()
         };
     }

@@ -14,10 +14,18 @@
             <span class="text-danger" asp-validation-for="Book.OriginalTitle"></span>
         </div>
         <div class="col-md-6">
-            <label asp-for="Book.OriginalLanguageCode" class="form-label">Мова<span class="text-danger">*</span></label>
-            <select asp-for="Book.OriginalLanguageCode" class="form-select" asp-items="ViewBag.Languages"
+            <label asp-for="Book.OriginalLanguageID" class="form-label">Мова<span class="text-danger">*</span></label>
+            <select asp-for="Book.OriginalLanguageID" class="form-select" asp-items="ViewBag.Languages"
                     data-val-length-min="1" data-val-length-max="99"></select>
-            <span class="text-danger" asp-validation-for="Book.OriginalLanguageCode"></span>
+            <span class="text-danger" asp-validation-for="Book.OriginalLanguageID"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3 offset-md-3">
+        <div class="col-md-6">
+            <label asp-for="Book.BookDescription" class="form-label">Опис</label>
+            <input asp-for="Book.BookDescription" class="form-control" />
+            <span class="text-danger" asp-validation-for="Book.BookDescription"></span>
         </div>
     </div>
 

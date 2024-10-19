@@ -17,9 +17,9 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
         try
         {
             const string sql = @"
-            INSERT INTO Publisher (Name)
-            OUTPUT INSERTED.PublisherID
-            VALUES (@Name)";
+        INSERT INTO Publisher (PublisherName, CountryID)
+        OUTPUT INSERTED.PublisherID
+        VALUES (@PublisherName, @CountryID)";
 
             using var connection = await CreateConnectionAsync();
             var publisherId = await connection.ExecuteScalarAsync<int>(sql, publisher);
@@ -32,17 +32,17 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
         }
         catch (SqlException ex) when (ex.Number == 547)
         {
-            if (ex.Message.Contains("CHK_Publisher_Name", StringComparison.InvariantCultureIgnoreCase))
+            if (ex.Message.Contains("CHK_Publisher_PublisherName", StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new CheckConstraintViolationException(
-                    "Cannot add the publisher because its Name should be at least 1 character long", ex);
+                    "Cannot add the publisher because its name should be at least 1 character long", ex);
             }
             throw;
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
             throw new NotNullConstraintViolationException(
-                "Cannot add the publisher because its name is not provided", ex);
+                "Cannot add the publisher because its name or country is not provided", ex);
         }
     }
 
@@ -51,9 +51,9 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
         try
         {
             const string sql = @"
-            UPDATE Publisher 
-            SET Name = @Name
-            WHERE PublisherID = @PublisherId";
+        UPDATE Publisher 
+        SET PublisherName = @PublisherName, CountryID = @CountryID
+        WHERE PublisherID = @PublisherID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, publisher);
@@ -65,29 +65,30 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
         }
         catch (SqlException ex) when (ex.Number == 547)
         {
-            if (ex.Message.Contains("CHK_Publisher_Name", StringComparison.InvariantCultureIgnoreCase))
+            if (ex.Message.Contains("CHK_Publisher_PublisherName", StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new CheckConstraintViolationException(
-                    "Cannot update the publisher because its Name should be at least 1 character long", ex);
+                    "Cannot update the publisher because its name should be at least 1 character long", ex);
             }
             throw;
         }
         catch (SqlException ex) when (ex.Number == 515)
         {
             throw new NotNullConstraintViolationException(
-                "Cannot update the publisher because its name is not provided", ex);
+                "Cannot update the publisher because its name or country is not provided", ex);
         }
     }
+
     public async Task DeleteAsync(int publisherId)
     {
         try
         {
             const string sql = @"
-            DELETE FROM Publisher 
-            WHERE PublisherID = @PublisherId";
+        DELETE FROM Publisher 
+        WHERE PublisherID = @PublisherID";
 
             using var connection = await CreateConnectionAsync();
-            await connection.ExecuteAsync(sql, new { PublisherId = publisherId });
+            await connection.ExecuteAsync(sql, new { PublisherID = publisherId });
         }
         catch (SqlException ex) when (ex.Number == 547)
         {
@@ -99,12 +100,23 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
     public async Task<Publisher?> GetByIdAsync(int publisherId)
     {
         const string sql = @"
-                SELECT PublisherID, Name 
-                FROM Publisher 
-                WHERE PublisherID = @PublisherId";
+        SELECT p.PublisherID, p.PublisherName, p.CountryID, c.CountryID, c.CountryName
+        FROM Publisher p
+        LEFT JOIN Country c ON p.CountryID = c.CountryID
+        WHERE p.PublisherID = @PublisherID";
 
         using var connection = await CreateConnectionAsync();
-        return await connection.QuerySingleOrDefaultAsync<Publisher>(sql, new { PublisherId = publisherId });
+        var countries = await connection.QueryAsync<Publisher, Country, Publisher>(
+            sql,
+            (publisher, country) =>
+            {
+                publisher.Country = country;
+                return publisher;
+            },
+            new { PublisherID = publisherId },
+            splitOn: "CountryID");
+
+        return countries.FirstOrDefault();
     }
 
     public async Task<int> GetCountAsync()
@@ -118,19 +130,27 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
     public async Task<List<Publisher>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT PublisherID, Name
-                FROM Publisher
-                ORDER BY Name
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+        SELECT p.PublisherID, p.PublisherName, p.CountryID, c.CountryID, c.CountryName
+        FROM Publisher p
+        LEFT JOIN Country c ON p.CountryID = c.CountryID
+        ORDER BY p.PublisherName
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
-        var publishers = await connection.QueryAsync<Publisher>(sql,
+        var publishers = await connection.QueryAsync<Publisher, Country, Publisher>(
+            sql,
+            (publisher, country) =>
+            {
+                publisher.Country = country;
+                return publisher;
+            },
             new
             {
                 Offset = (pageNumber - 1) * pageSize,
                 PageSize = pageSize
-            });
+            },
+            splitOn: "CountryID");
 
         return publishers.ToList();
     }
@@ -138,12 +158,21 @@ public class PublisherRepository : BaseRepository, IPublisherRepository
     public async Task<List<Publisher>> GetAllAsync()
     {
         const string sql = @"
-                SELECT PublisherID, Name
-                FROM Publisher
-                ORDER BY Name";
+        SELECT p.PublisherID, p.PublisherName, p.CountryID, c.CountryID, c.CountryName
+        FROM Publisher p
+        LEFT JOIN Country c ON p.CountryID = c.CountryID
+        ORDER BY p.PublisherName";
 
         using var connection = await CreateConnectionAsync();
-        var publishers = await connection.QueryAsync<Publisher>(sql);
+        var publishers = await connection.QueryAsync<Publisher, Country, Publisher>(
+            sql,
+            (publisher, country) =>
+            {
+                publisher.Country = country;
+                return publisher;
+            },
+            splitOn: "CountryID");
+
         return publishers.ToList();
     }
 }

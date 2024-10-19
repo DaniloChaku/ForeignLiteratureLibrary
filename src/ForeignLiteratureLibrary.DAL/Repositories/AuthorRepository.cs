@@ -17,23 +17,23 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
         try
         {
             const string sql = @"
-                INSERT INTO Author (FullName, CountryCode)
-                OUTPUT INSERTED.AuthorID
-                VALUES (@FullName, @CountryCode)";
+            INSERT INTO Author (AuthorFullName, CountryID, BirthYear, DeathYear)
+            OUTPUT INSERTED.AuthorID
+            VALUES (@AuthorFullName, @CountryID, @BirthYear, @DeathYear)";
 
             using var connection = await CreateConnectionAsync();
             var authorId = await connection.ExecuteScalarAsync<int>(sql, author);
             author.AuthorID = authorId;
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_FullName"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_AuthorFullName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot add the author because the full name cannot be empty", ex);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_Country"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_CountryID"))
         {
             throw new ForeignKeyViolationException(
-                $"Cannot add the author because the country '{author.CountryCode}' does not exist", ex);
+                $"Cannot add the author because the country '{author.CountryID}' does not exist", ex);
         }
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
@@ -52,22 +52,25 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
         try
         {
             const string sql = @"
-                UPDATE Author 
-                SET FullName = @FullName, CountryCode = @CountryCode
-                WHERE AuthorID = @AuthorID";
+            UPDATE Author 
+            SET AuthorFullName = @AuthorFullName, 
+            CountryID = @CountryID,
+            BirthYear = @BirthYear,
+            DeathYear = @DeathYear
+            WHERE AuthorID = @AuthorID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, author);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_FullName"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("CHK_Author_AuthorFullName"))
         {
             throw new CheckConstraintViolationException(
                 "Cannot update the author because the full name cannot be empty", ex);
         }
-        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_Country"))
+        catch (SqlException ex) when (ex.Number == 547 && ex.Message.Contains("FK_Author_CountryID"))
         {
             throw new ForeignKeyViolationException(
-                $"Cannot update the author because the country '{author.CountryCode}' does not exist", ex);
+                $"Cannot update the author because the country '{author.CountryID}' does not exist", ex);
         }
         catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
         {
@@ -86,8 +89,8 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
         try
         {
             const string sql = @"
-                DELETE FROM Author 
-                WHERE AuthorID = @AuthorID";
+            DELETE FROM Author 
+            WHERE AuthorID = @AuthorID";
 
             using var connection = await CreateConnectionAsync();
             await connection.ExecuteAsync(sql, new { AuthorID = authorId });
@@ -102,18 +105,18 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
     public async Task<Author?> GetByIdAsync(int authorId)
     {
         const string sql = @"
-                SELECT a.AuthorID, a.FullName, a.CountryCode,
-                       c.CountryCode, c.Name as CountryName,
-                       b.BookID, b.OriginalTitle, b.OriginalLanguageCode, b.PublicationYear
-                FROM Author a
-                LEFT JOIN Country c ON a.CountryCode = c.CountryCode
-                LEFT JOIN BookAuthor ba ON a.AuthorID = ba.AuthorID
-                LEFT JOIN Book b ON ba.BookID = b.BookID
-                WHERE a.AuthorID = @AuthorID";
+            SELECT a.AuthorID, a.AuthorFullName, a.BirthYear, a.DeathYear, a.CountryID,
+                   c.CountryID, c.CountryName,
+                   b.BookID, b.OriginalTitle, b.FirstPublicationYear, b.BookDescription
+            FROM Author a
+            LEFT JOIN Country c ON a.CountryID = c.CountryID
+            LEFT JOIN BookAuthor ba ON a.AuthorID = ba.AuthorID
+            LEFT JOIN Book b ON ba.BookID = b.BookID
+            WHERE a.AuthorID = @AuthorID";
 
         using var connection = await CreateConnectionAsync();
 
-        Dictionary<int, Author> authorDict = [];
+        var authorDict = new Dictionary<int, Author>();
 
         await connection.QueryAsync<Author, Country, Book, Author>(
             sql,
@@ -135,7 +138,7 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
                 return authorEntry;
             },
             new { AuthorID = authorId },
-            splitOn: "CountryCode,BookID"
+            splitOn: "CountryID, BookID"
         );
 
         return authorDict.Values.FirstOrDefault();
@@ -152,12 +155,13 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
     public async Task<List<Author>> GetPageAsync(int pageNumber, int pageSize)
     {
         const string sql = @"
-                SELECT a.AuthorID, a.FullName, a.CountryCode, c.CountryCode, c.Name
-                FROM Author a
-                JOIN Country c ON a.CountryCode = c.CountryCode
-                ORDER BY a.FullName
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY";
+            SELECT a.AuthorID, a.AuthorFullName, a.BirthYear, a.DeathYear, a.CountryID, 
+            c.CountryID, c.CountryName
+            FROM Author a
+            JOIN Country c ON a.CountryID = c.CountryID
+            ORDER BY a.AuthorFullName
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
 
         using var connection = await CreateConnectionAsync();
         var authors = await connection.QueryAsync<Author, Country, Author>(
@@ -168,7 +172,7 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
                 return author;
             },
             new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize },
-            splitOn: "CountryCode"
+            splitOn: "CountryID"
         );
 
         return authors.ToList();
@@ -177,20 +181,20 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
     public async Task<List<TopAuthor>> GetTop10AuthorsAsync(DateTime startDate, DateTime endDate)
     {
         const string sql = @"
-            SELECT TOP 10 
-            a.AuthorID, 
-            a.FullName, 
-            COUNT(bel.BookEditionLoanID) as LoanCount,
-            c.Name as CountryName
-            FROM Author a
-            JOIN BookAuthor ba ON a.AuthorID = ba.AuthorID
-            JOIN Book b ON ba.BookID = b.BookID
-            JOIN BookEdition be ON b.BookID = be.BookID
-            JOIN BookEditionLoan bel ON be.BookEditionID = bel.BookEditionID
-            JOIN Country c ON a.CountryCode = c.CountryCode
-            WHERE bel.LoanDate BETWEEN @StartDate AND @EndDate
-            GROUP BY a.AuthorID, a.FullName, c.Name
-            ORDER BY LoanCount DESC";
+        SELECT TOP 10 
+        a.AuthorID, 
+        a.AuthorFullName, 
+        COUNT(l.LoanID) as LoanCount,
+        c.CountryName
+        FROM Author a
+        JOIN BookAuthor ba ON a.AuthorID = ba.AuthorID
+        JOIN Book b ON ba.BookID = b.BookID
+        JOIN BookEdition be ON b.BookID = be.BookID
+        JOIN Loan l ON be.BookEditionID = l.BookEditionID
+        JOIN Country c ON a.CountryID = c.CountryID
+        WHERE l.LoanDate BETWEEN @StartDate AND @EndDate
+        GROUP BY a.AuthorID, a.AuthorFullName, c.CountryName
+        ORDER BY LoanCount DESC";
 
         using var connection = await CreateConnectionAsync();
         var topAuthors = await connection.QueryAsync<TopAuthor>(
@@ -204,9 +208,9 @@ public class AuthorRepository : BaseRepository, IAuthorRepository
     public async Task<List<Author>> GetAllAsync()
     {
         const string sql = @"
-                SELECT AuthorID, FullName, CountryCode
-                FROM Author
-                ORDER BY FullName";
+            SELECT AuthorID, AuthorFullName, CountryID
+            FROM Author
+            ORDER BY AuthorFullName";
 
         using var connection = await CreateConnectionAsync();
         var authors = await connection.QueryAsync<Author>(sql);

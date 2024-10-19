@@ -30,14 +30,14 @@ public class CountryService : ICountryService
         await _countryRepository.UpdateAsync(country);
     }
 
-    public async Task DeleteCountryAsync(string countryCode)
+    public async Task DeleteCountryAsync(int countryId)
     {
-        await _countryRepository.DeleteAsync(countryCode);
+        await _countryRepository.DeleteAsync(countryId);
     }
 
-    public async Task<CountryDto?> GetCountryByCodeAsync(string countryCode)
+    public async Task<CountryDto?> GetCountryByIdAsync(int countryId)
     {
-        var country = await _countryRepository.GetByCodeAsync(countryCode);
+        var country = await _countryRepository.GetByIdAsync(countryId);
         return country?.ToDto();
     }
 

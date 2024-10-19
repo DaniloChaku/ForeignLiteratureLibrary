@@ -13,9 +13,9 @@ public interface ICountryService
 
     Task UpdateCountryAsync(CountryDto countryDto);
 
-    Task DeleteCountryAsync(string countryCode);
+    Task DeleteCountryAsync(int countryId);
 
-    Task<CountryDto?> GetCountryByCodeAsync(string countryCode);
+    Task<CountryDto?> GetCountryByIdAsync(int countryId);
 
     Task<PaginatedResult<CountryDto>> GetCountriesPageAsync(int pageNumber, int pageSize);
 

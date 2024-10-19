@@ -12,6 +12,7 @@
         <thead>
             <tr>
                 <th scope="col">ПІБ</th>
+                <th scope="col">Країна</th>
                 <th scope="col">Дії</th>
             </tr>
         </thead>
@@ -20,6 +21,7 @@
             {
                 <tr>
                     <td>@genre.FullName</td>
+                    <td>@genre.Country?.Name</td>
                     <td>
                         <a asp-action="Delete" asp-route-id="@genre.TranslatorID">Видалити</a>
                         <a asp-action="Edit" asp-route-id="@genre.TranslatorID">Редагувати</a>

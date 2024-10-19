@@ -31,7 +31,9 @@ public class GenreRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.GenreID.Should().Be(id);
-        result.Name.Should().Be("Fiction");
+        result.GenreName.Should().Be("Fiction");
+        result.Books.Should().HaveCount(1);
+        result.Books.Should().Contain(b => b.OriginalTitle == "The Catcher in the Rye");
     }
 
     [Fact]
@@ -52,7 +54,7 @@ public class GenreRepositoryTests : IDisposable
 
         // Assert
         results.Should().HaveCount(4);
-        results.Select(g => g.Name).Should().BeEquivalentTo(
+        results.Select(g => g.GenreName).Should().BeEquivalentTo(
             "Fiction", "Philosophy", "Historical Novel", "Science Fiction");
     }
 
@@ -82,7 +84,7 @@ public class GenreRepositoryTests : IDisposable
     public async Task AddAsync_AddsNewGenre()
     {
         // Arrange
-        var newGenre = new Genre { Name = "Romanance" };
+        var newGenre = new Genre { GenreName = "Romanance" };
 
         // Act
         await _repository.AddAsync(newGenre);
@@ -91,7 +93,7 @@ public class GenreRepositoryTests : IDisposable
         newGenre.GenreID.Should().BeGreaterThan(0);
         var result = await _repository.GetByIdAsync(newGenre.GenreID);
         result.Should().NotBeNull();
-        result!.Name.Should().Be("Romanance");
+        result!.GenreName.Should().Be("Romanance");
     }
 
     [Fact]
@@ -100,7 +102,7 @@ public class GenreRepositoryTests : IDisposable
         // Arrange
         var id = 1;
         var genreToUpdate = await _repository.GetByIdAsync(id);
-        genreToUpdate!.Name = "Contemporary Fiction";
+        genreToUpdate!.GenreName = "Contemporary Fiction";
 
         // Act
         await _repository.UpdateAsync(genreToUpdate);
@@ -108,7 +110,7 @@ public class GenreRepositoryTests : IDisposable
 
         // Assert
         updatedGenre.Should().NotBeNull();
-        updatedGenre!.Name.Should().Be("Contemporary Fiction");
+        updatedGenre!.GenreName.Should().Be("Contemporary Fiction");
     }
 
     [Fact]
@@ -129,7 +131,7 @@ public class GenreRepositoryTests : IDisposable
     public async Task AddAsync_DuplicateName_ThrowsException()
     {
         // Arrange
-        var duplicateGenre = new Genre { Name = "Fiction" };
+        var duplicateGenre = new Genre { GenreName = "Fiction" };
 
         // Act & Assert
         await Assert.ThrowsAsync<UniqueConstraintViolationException>(() => _repository.AddAsync(duplicateGenre));
@@ -142,7 +144,7 @@ public class GenreRepositoryTests : IDisposable
     public async Task AddAsync_InvalidName_ThrowsException(string invalidName)
     {
         // Arrange
-        var invalidGenre = new Genre { Name = invalidName };
+        var invalidGenre = new Genre { GenreName = invalidName };
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<Exception>(() => _repository.AddAsync(invalidGenre));

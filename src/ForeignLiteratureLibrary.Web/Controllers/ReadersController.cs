@@ -40,15 +40,23 @@ public class ReadersController : Controller
             return View();
         }
 
-        await _readerService.AddReaderAsync(readerDto);
+        try
+        {
+            await _readerService.AddReaderAsync(readerDto);
+        }
+        catch (UniqueConstraintViolationException)
+        {
+            ViewBag.Errors = new List<string>() { "Вже інує читач з таким номером квитка." };
+            return View(readerDto);
+        }
 
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(string id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var reader = await _readerService.GetReaderByLibraryCardNumberAsync(id);
+        var reader = await _readerService.GetReaderByIdAsync(id);
 
         if (reader == null)
         {
@@ -76,7 +84,7 @@ public class ReadersController : Controller
         }
         catch (UniqueConstraintViolationException)
         {
-            ViewBag.Errors = new List<string>() { "Вже інує країна з такою назвою або кодом." };
+            ViewBag.Errors = new List<string>() { "Вже інує читач з таким номером квитка." };
             return View(readerDto);
         }
 
@@ -84,9 +92,9 @@ public class ReadersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var reader = await _readerService.GetReaderByLibraryCardNumberAsync(id);
+        var reader = await _readerService.GetReaderByIdAsync(id);
 
         if (reader == null)
         {
@@ -101,7 +109,7 @@ public class ReadersController : Controller
     {
         try
         {
-            await _readerService.DeleteReaderAsync(readerDto.LibraryCardNumber);
+            await _readerService.DeleteReaderAsync(readerDto.ReaderID);
         }
         catch (ForeignKeyViolationException)
         {

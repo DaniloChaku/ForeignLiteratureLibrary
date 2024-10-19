@@ -7,12 +7,7 @@
 <form asp-action="Add" method="post">
     <h2 class="text-center mb-3">Додати</h2>
     <div class="row mb-3">
-        <div class="col-md-6 mb-2">
-            <label asp-for="CountryCode" class="form-label">Код</label>
-            <input asp-for="CountryCode" class="form-control" />
-            <span class="text-danger" asp-validation-for="CountryCode"></span>
-        </div>
-        <div class="col-md-6">
+        <div class="col-md-6 offset-md-3">
             <label asp-for="Name" class="form-label">Назва</label>
             <input asp-for="Name" class="form-control" />
             <span class="text-danger" asp-validation-for="Name"></span>

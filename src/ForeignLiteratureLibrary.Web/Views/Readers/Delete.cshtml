@@ -5,13 +5,14 @@
 }
 
 <form asp-action="Delete" method="post">
+    <input hidden asp-for="ReaderID" />
     <input hidden asp-for="LibraryCardNumber" />
     <input hidden asp-for="FullName" />
     <input hidden asp-for="Email" />
     <input hidden asp-for="Phone" />
-    <input hidden asp-for="DateOfBirth" />
-    <input hidden asp-for="RegistrationDate" />
+
     <h2 class="text-center mb-3">Редагувати</h2>
+
     <div class="row mb-3">
         <div class="col-md-6 mb-2">
             <label asp-for="LibraryCardNumber" class="form-label">Номер картки читача</label>
@@ -31,17 +32,6 @@
         <div class="col-md-6">
             <label asp-for="Phone" class="form-label">Номер телефону</label>
             <input asp-for="Phone" class="form-control" disabled/>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6 mb-2">
-            <label asp-for="DateOfBirth" class="form-label">Дата народження</label>
-            <input asp-for="DateOfBirth" class="form-control" disabled/>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="RegistrationDate" class="form-label">Дата реєстрації</label>
-            <input asp-for="RegistrationDate" class="form-control" disabled/>
         </div>
     </div>
 

@@ -20,7 +20,7 @@ public class GenreDto
         return new Genre
         {
             GenreID = this.GenreID,
-            Name = this.Name.Trim(),
+            GenreName = this.Name.Trim(),
             Books = this.Books.ConvertAll(b => b.ToEntity())
         };
     }
@@ -33,7 +33,7 @@ public static class GenreExtensions
         return new GenreDto
         {
             GenreID = genre.GenreID,
-            Name = genre.Name.Trim(),
+            Name = genre.GenreName.Trim(),
             Books = genre.Books.Select(b => b.ToDto()).ToList()
         };
     }

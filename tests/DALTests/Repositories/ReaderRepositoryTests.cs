@@ -20,24 +20,24 @@ public class ReaderRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetByLibraryCardNumberAsync_ExistingReader_ReturnsReaderWithLoans()
+    public async Task GetByIdAsync_ExistingReader_ReturnsReaderWithLoans()
     {
         // Act
-        var result = await _repository.GetByLibraryCardNumberAsync("1001");
+        var result = await _repository.GetByIdAsync(1);
 
         // Assert
         result.Should().NotBeNull();
         result!.LibraryCardNumber.Should().Be("1001");
-        result.FullName.Should().Be("John Doe");
+        result.ReaderFullName.Should().Be("John Doe");
         result.Loans.Should().HaveCount(1);
         result.Loans.Should().Contain(l => l.BookEditionID == 1);
     }
 
     [Fact]
-    public async Task GetByLibraryCardNumberAsync_NonExistingReader_ReturnsNull()
+    public async Task GetByIdAsync_NonExistingReader_ReturnsNull()
     {
         // Act
-        var result = await _repository.GetByLibraryCardNumberAsync("9999");
+        var result = await _repository.GetByIdAsync(999);
 
         // Assert
         result.Should().BeNull();
@@ -51,8 +51,8 @@ public class ReaderRepositoryTests : IDisposable
 
         // Assert
         results.Should().HaveCount(2);
-        results.Should().Contain(r => r.FullName == "Jane Smith");
-        results.Should().Contain(r => r.FullName == "Jane Doe");
+        results.Should().Contain(r => r.ReaderFullName == "Jane Smith");
+        results.Should().Contain(r => r.ReaderFullName == "Jane Doe");
     }
 
     [Fact]
@@ -74,48 +74,47 @@ public class ReaderRepositoryTests : IDisposable
         var newReader = new Reader
         {
             LibraryCardNumber = "1004",
-            FullName = "New Reader",
-            DateOfBirth = new DateTime(1995, 1, 1),
-            Email = "new.reader@example.com",
-            Phone = "+1234567890",
-            RegistrationDate = DateTime.Today
+            ReaderFullName = "New Reader",
+            EmailAddress = "new.reader@example.com",
+            PhoneNumber = "+1234567890",
         };
 
         // Act
         await _repository.AddAsync(newReader);
-        var result = await _repository.GetByLibraryCardNumberAsync("1004");
+        var result = await _repository.GetByIdAsync(4);
 
         // Assert
         result.Should().NotBeNull();
         result!.LibraryCardNumber.Should().Be("1004");
-        result.FullName.Should().Be("New Reader");
+        result.ReaderFullName.Should().Be("New Reader");
     }
 
     [Fact]
     public async Task UpdateAsync_UpdatesExistingReader()
     {
         // Arrange
-        var reader = await _repository.GetByLibraryCardNumberAsync("1001");
-        reader!.Phone = "+999999999";
+        var id = 1;
+        var reader = await _repository.GetByIdAsync(id);
+        reader!.PhoneNumber = "+999999999";
 
         // Act
         await _repository.UpdateAsync(reader);
-        var updatedReader = await _repository.GetByLibraryCardNumberAsync("1001");
+        var updatedReader = await _repository.GetByIdAsync(id);
 
         // Assert
         updatedReader.Should().NotBeNull();
-        updatedReader!.Phone.Should().Be("+999999999");
+        updatedReader!.PhoneNumber.Should().Be("+999999999");
     }
 
     [Fact]
     public async Task DeleteAsync_DeletesExistingReader()
     {
         // Arrange
-        var cardNumber = "1003";
+        var id = 3;
 
         // Act
-        await _repository.DeleteAsync(cardNumber);
-        var deletedReader = await _repository.GetByLibraryCardNumberAsync(cardNumber);
+        await _repository.DeleteAsync(id);
+        var deletedReader = await _repository.GetByIdAsync(id);
 
         // Assert
         deletedReader.Should().BeNull();
@@ -134,15 +133,13 @@ public class ReaderRepositoryTests : IDisposable
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    public async Task AddAsync_EmptyFullName_ThrowsException(string invalidName)
+    public async Task AddAsync_EmptyFullName_ThrowsCheckConstraintViolationException(string invalidName)
     {
         // Arrange
         var invalidReader = new Reader
         {
             LibraryCardNumber = "1004",
-            FullName = invalidName,
-            DateOfBirth = new DateTime(1995, 1, 1),
-            RegistrationDate = DateTime.Today
+            ReaderFullName = invalidName,
         };
 
         // Act & Assert

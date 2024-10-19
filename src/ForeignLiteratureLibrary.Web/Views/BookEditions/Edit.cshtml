@@ -24,11 +24,11 @@
 
     <div class="row mb-3">
         <div class="col-md-6">
-            <label asp-for="BookEdition.LanguageCode" class="form-label">Мова видання<span class="text-danger">*</span></label>
-            <select asp-for="BookEdition.LanguageCode" class="form-select" asp-items="ViewBag.Languages"
+            <label asp-for="BookEdition.LanguageID" class="form-label">Мова видання<span class="text-danger">*</span></label>
+            <select asp-for="BookEdition.LanguageID" class="form-select" asp-items="ViewBag.Languages"
                     data-val-length-min="1" data-val-length-max="99">
             </select>
-            <span class="text-danger" asp-validation-for="BookEdition.LanguageCode"></span>
+            <span class="text-danger" asp-validation-for="BookEdition.LanguageID"></span>
         </div>
         <div class="col-md-6">
             <label asp-for="BookEdition.PublisherID" class="form-label">Видавництво</label>

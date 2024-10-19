@@ -8,9 +8,9 @@ public interface ICountryRepository
 
     Task UpdateAsync(Country country);
 
-    Task DeleteAsync(string countryCode);
+    Task DeleteAsync(int countryId);
 
-    Task<Country?> GetByCodeAsync(string countryCode);
+    Task<Country?> GetByIdAsync(int countryId);
 
     Task<int> GetCountAsync();
 

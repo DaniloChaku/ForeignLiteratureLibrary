@@ -13,13 +13,13 @@ public class BookDto
     [StringLength(255, ErrorMessage = "Original Title cannot exceed 255 characters.")]
     public string OriginalTitle { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "Original Language Code must be between 2 and 3 characters long.")]
-    public string OriginalLanguageCode { get; set; } = string.Empty;
+    public int OriginalLanguageID { get; set; }
 
     [Required]
     [Range(0, int.MaxValue, ErrorMessage = "PublicationYear must be a positive number.")]
     public int PublicationYear { get; set; }
+
+    public string? BookDescription { get; set; }
 
     public LanguageDto? OriginalLanguage { get; set; }
 
@@ -35,8 +35,9 @@ public class BookDto
         {
             BookID = this.BookID,
             OriginalTitle = this.OriginalTitle.Trim(),
-            OriginalLanguageCode = this.OriginalLanguageCode.Trim(),
-            PublicationYear = this.PublicationYear,
+            OriginalLanguageID = this.OriginalLanguageID,
+            FirstPublicationYear = this.PublicationYear,
+            BookDescription = this.BookDescription?.Trim(),
             Authors = this.Authors.ConvertAll(a => a.ToEntity()),
             Genres = this.Genres.ConvertAll(g => g.ToEntity())
         };
@@ -51,8 +52,9 @@ public static class BookExtensions
         {
             BookID = book.BookID,
             OriginalTitle = book.OriginalTitle.Trim(),
-            OriginalLanguageCode = book.OriginalLanguageCode.Trim(),
-            PublicationYear = book.PublicationYear,
+            OriginalLanguageID = book.OriginalLanguageID,
+            PublicationYear = book.FirstPublicationYear,
+            BookDescription = book.BookDescription?.Trim(),
             OriginalLanguage = book.OriginalLanguage?.ToDto(),
             Authors = book.Authors.Select(a => a.ToDto()).ToList(),
             Genres = book.Genres.Select(g => g.ToDto()).ToList(),

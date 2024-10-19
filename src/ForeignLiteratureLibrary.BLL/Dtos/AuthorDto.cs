@@ -11,13 +11,18 @@ public class AuthorDto
 
     [Required]
     [StringLength(100, ErrorMessage = "Full Name cannot exceed 100 characters.")]
-    public string FullName { get; set; } = string.Empty;
+    public string AuthorFullName { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(3, MinimumLength = 2, ErrorMessage = "CountryCode must be 2 or 3 characters long.")]
-    public string CountryCode { get; set; } = string.Empty;
+    public int CountryID { get; set; }
+
+    [Range(0, 9999, ErrorMessage = "BirthYear must be between 0 and 9999.")]
+    public int? BirthYear { get; set; }
+
+    [Range(0, 9999, ErrorMessage = "DeathYear must be between 0 and 9999.")]
+    public int? DeathYear { get; set; }
 
     public CountryDto? Country { get; set; }
+
     public List<BookDto> Books { get; set; } = [];
 
     public Author ToEntity()
@@ -25,8 +30,10 @@ public class AuthorDto
         return new Author
         {
             AuthorID = this.AuthorID,
-            FullName = this.FullName.Trim(),
-            CountryCode = this.CountryCode.Trim(),
+            AuthorFullName = this.AuthorFullName.Trim(),
+            CountryID = this.CountryID,
+            BirthYear = this.BirthYear,
+            DeathYear = this.DeathYear,
             Books = this.Books.ConvertAll(b => b.ToEntity())
         };
     }
@@ -39,8 +46,10 @@ public static class AuthorExtensions
         return new AuthorDto
         {
             AuthorID = author.AuthorID,
-            FullName = author.FullName.Trim(),
-            CountryCode = author.CountryCode.Trim(),
+            AuthorFullName = author.AuthorFullName.Trim(),
+            BirthYear = author.BirthYear,
+            DeathYear = author.DeathYear,
+            CountryID = author.CountryID,
             Country = author.Country?.ToDto(),
             Books = author.Books.Select(b => b.ToDto()).ToList()
         };

@@ -46,7 +46,7 @@ public class LanguagesController : Controller
         }
         catch (UniqueConstraintViolationException)
         {
-            ViewBag.Errors = new List<string>() { "Вже інує мова з такою назвою або кодом." };
+            ViewBag.Errors = new List<string>() { "Вже інує мова з такою назвою." };
             return View();
         }
 
@@ -54,9 +54,9 @@ public class LanguagesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(string id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var language = await _languageService.GetLanguageByCodeAsync(id);
+        var language = await _languageService.GetLanguageByIdAsync(id);
 
         if (language == null)
         {
@@ -84,7 +84,7 @@ public class LanguagesController : Controller
         }
         catch (UniqueConstraintViolationException)
         {
-            ViewBag.Errors = new List<string>() { "Вже інує країна з такою назвою або кодом." };
+            ViewBag.Errors = new List<string>() { "Вже інує мова з такою назвою." };
             return View(languageDto);
         }
 
@@ -92,9 +92,9 @@ public class LanguagesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var language = await _languageService.GetLanguageByCodeAsync(id);
+        var language = await _languageService.GetLanguageByIdAsync(id);
 
         if (language == null)
         {
@@ -109,7 +109,7 @@ public class LanguagesController : Controller
     {
         try
         {
-            await _languageService.DeleteLanguageAsync(languageDto.LanguageCode);
+            await _languageService.DeleteLanguageAsync(languageDto.LanguageID);
         }
         catch (ForeignKeyViolationException)
         {
