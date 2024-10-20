@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ForeignLiteratureLibrary.BLL.Interfaces;
 
-public interface IBookEditionLoanService
+public interface ILoanService
 {
     Task AddLoanAsync(LoanDto loanDto);
 

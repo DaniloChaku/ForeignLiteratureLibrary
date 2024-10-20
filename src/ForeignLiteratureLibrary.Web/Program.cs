@@ -22,7 +22,7 @@ builder.Services.AddScoped<IAuthorRepository>(provider => new AuthorRepository(c
     .AddScoped<ITranslatorRepository>(provider => new TranslatorRepository(connectionString));
 
 builder.Services.AddScoped<IAuthorService, AuthorService>()
-    .AddScoped<IBookEditionLoanService, BookEditionLoanService>()
+    .AddScoped<ILoanService, LoanService>()
     .AddScoped<IBookEditionService, BookEditionService>()
     .AddScoped<IBookService, BookService>()
     .AddScoped<ICountryService, CountryService>()

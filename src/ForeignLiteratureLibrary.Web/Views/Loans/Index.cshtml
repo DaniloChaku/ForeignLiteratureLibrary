@@ -4,10 +4,20 @@
     ViewBag.Title = "Видачі книг";
 }
 
-<a class="btn btn-primary mt-2 mb-4" asp-action="Add">Додати</a>
-
-<div class="d-flex flex-column align-content-center gap-3">
+<div class="d-flex flex-column align-content-center gap-3 mt-4">
     <h2 class="text-center">Видачі книг</h2>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <a class="btn btn-primary" asp-action="Add">Додати</a>
+        </div>
+        <form asp-action="Index" method="get" class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="showOverdueOnly" name="showOverdueOnly" value="true" @(ViewBag.ShowOverdueOnly ? "checked" : "")>
+            <label class="form-check-label" for="showOverdueOnly">Показати забаргованості</label>
+            <button type="submit" class="btn btn-primary btn-sm ms-2">Застосувати</button>
+        </form>
+    </div>
+
     <table class="table table-hover">
         <thead>
             <tr>

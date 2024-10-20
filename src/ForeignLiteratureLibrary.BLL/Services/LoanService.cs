@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace ForeignLiteratureLibrary.BLL.Services;
 
-public class BookEditionLoanService : IBookEditionLoanService
+public class LoanService : ILoanService
 {
     private readonly ILoanRepository _bookEditionLoanRepository;
 
-    public BookEditionLoanService(ILoanRepository bookEditionLoanRepository)
+    public LoanService(ILoanRepository bookEditionLoanRepository)
     {
         _bookEditionLoanRepository = bookEditionLoanRepository;
     }

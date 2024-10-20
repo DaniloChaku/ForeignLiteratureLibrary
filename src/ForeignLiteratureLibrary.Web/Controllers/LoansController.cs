@@ -9,12 +9,12 @@ namespace ForeignLiteratureLibrary.Web.Controllers;
 
 public class LoansController : Controller
 {
-    private readonly IBookEditionLoanService _bookEditionLoanService;
+    private readonly ILoanService _bookEditionLoanService;
     private readonly IBookEditionService _bookEditionService;
     private readonly IReaderService _readerService;
 
     public LoansController(
-        IBookEditionLoanService bookEditionLoanService,
+        ILoanService bookEditionLoanService,
         IBookEditionService bookEditionService,
         IReaderService readerService)
     {
@@ -23,10 +23,21 @@ public class LoansController : Controller
         _readerService = readerService;
     }
 
-    public async Task<IActionResult> Index(int page = 1, int pageSize = PaginationConstants.DefaultPageSize)
+    public async Task<IActionResult> Index(int page = 1, int pageSize = PaginationConstants.DefaultPageSize, bool showOverdueOnly = false)
     {
-        var bookEditionLoans = await _bookEditionLoanService.GetLoansPageAsync(page, pageSize);
-        return View(bookEditionLoans);
+        PaginatedResult<LoanDto> loans;
+
+        if (showOverdueOnly)
+        {
+            loans = await _bookEditionLoanService.GetOverdueLoansPageAsync(page, pageSize);
+        }
+        else
+        {
+            loans = await _bookEditionLoanService.GetLoansPageAsync(page, pageSize);
+        }
+
+        ViewBag.ShowOverdueOnly = showOverdueOnly;
+        return View(loans);
     }
 
     [HttpGet]
@@ -38,7 +49,7 @@ public class LoansController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add(LoanDto bookEditionLoan)
+    public async Task<IActionResult> Add(LoanDto loan)
     {
         if (!ModelState.IsValid)
         {
@@ -52,19 +63,19 @@ public class LoansController : Controller
 
         try
         {
-            await _bookEditionLoanService.AddLoanAsync(bookEditionLoan);
+            await _bookEditionLoanService.AddLoanAsync(loan);
         }
         catch (BookEditionUnavailableException)
         {
             await PopulateViewBagAsync();
             ViewBag.Errors = new List<string>() { "Немає доступних примірників." };
-            return View(bookEditionLoan);
+            return View(loan);
         }
         catch (CheckConstraintViolationException ex)
         {
             await PopulateViewBagAsync();
             ViewBag.Errors = new List<string>() { ex.Message };
-            return View(bookEditionLoan);
+            return View(loan);
         }
 
         return RedirectToAction(nameof(Index));
@@ -73,9 +84,9 @@ public class LoansController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var bookEditionLoan = await _bookEditionLoanService.GetLoanByIdAsync(id);
+        var loan = await _bookEditionLoanService.GetLoanByIdAsync(id);
 
-        if (bookEditionLoan == null)
+        if (loan == null)
         {
             return RedirectToAction(nameof(Index));
         }
@@ -83,11 +94,11 @@ public class LoansController : Controller
 
         await PopulateViewBagAsync();
 
-        return View(bookEditionLoan);
+        return View(loan);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(LoanDto bookEditionLoan)
+    public async Task<IActionResult> Edit(LoanDto loan)
     {
         if (!ModelState.IsValid)
         {
@@ -96,25 +107,25 @@ public class LoansController : Controller
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage)
                                 .ToList();
-            return View(bookEditionLoan);
+            return View(loan);
         }
 
 
         try
         {
-            await _bookEditionLoanService.UpdateLoanAsync(bookEditionLoan);
+            await _bookEditionLoanService.UpdateLoanAsync(loan);
         }
         catch (BookEditionUnavailableException)
         {
             await PopulateViewBagAsync();
             ViewBag.Errors = new List<string>() { "Немає доступних примірників." };
-            return View(bookEditionLoan);
+            return View(loan);
         }
         catch (CheckConstraintViolationException ex)
         {
             await PopulateViewBagAsync();
             ViewBag.Errors = new List<string>() { ex.Message };
-            return View(bookEditionLoan);
+            return View(loan);
         }
 
         return RedirectToAction(nameof(Index));
@@ -123,22 +134,22 @@ public class LoansController : Controller
     [HttpGet]
     public async Task<IActionResult> Delete(int id)
     {
-        var bookeditionloan = await _bookEditionLoanService.GetLoanByIdAsync(id);
+        var loan = await _bookEditionLoanService.GetLoanByIdAsync(id);
 
-        if (bookeditionloan == null)
+        if (loan == null)
         {
             return RedirectToAction(nameof(Index));
         }
 
         await PopulateViewBagAsync();
 
-        return View(bookeditionloan);
+        return View(loan);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Delete(LoanDto bookEditionLoan)
+    public async Task<IActionResult> Delete(LoanDto loan)
     {
-        await _bookEditionLoanService.DeleteLoanAsync(bookEditionLoan.LoanID);
+        await _bookEditionLoanService.DeleteLoanAsync(loan.LoanID);
 
 
         return RedirectToAction(nameof(Index));
